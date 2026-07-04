@@ -1,0 +1,566 @@
+---
+/**
+ * src/components/Footer.astro
+ * Estrutura e estilos estáticos fiéis ao REPORT-001-header-footer.md (bloco Footer).
+ *
+ * Cores remap (REPORT-001 §1 — Tabela de cores):
+ *   rgba(255,255,255,.25) → var(--border-light)
+ *   rgba(255,255,255,.45) → var(--text-muted-light)
+ *
+ * NÃO implementado neste arquivo (vem no próximo prompt):
+ *   - Comportamento de submit do formulário de newsletter
+ */
+
+const WHATSAPP_NUMBER = '5534992362596';
+const WHATSAPP_MSG    = encodeURIComponent(
+  'Olá, vim pelo blog da Off-Data e quero falar com a equipe.'
+);
+const WHATSAPP_URL    = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
+
+const year = new Date().getFullYear();
+
+// Menus idênticos ao FooterSection.jsx original
+const footerMenus = [
+  {
+    title: 'Agência',
+    links: [
+      { label: 'Início',   href: '/#home'     },
+      { label: 'Serviços', href: '/#products' },
+      { label: 'Nichos',   href: '/#built-for' },
+      { label: 'Sobre',    href: '/agencia'   },
+      { label: 'Contato',  href: WHATSAPP_URL, external: true },
+    ],
+  },
+  {
+    title: 'Serviços',
+    links: [
+      { label: 'Sites Imersivos',          href: '/#products' },
+      { label: 'SEO Local',                href: '/#products' },
+      { label: 'Tráfego Cirúrgico',        href: '/#products' },
+      { label: 'Landing Pages High-Ticket',href: '/#products' },
+      { label: 'Performance Web',          href: '/#products' },
+      { label: 'Conteúdo Técnico',         href: '/#products' },
+      { label: 'Automação B2B',            href: '/#products' },
+    ],
+  },
+  {
+    title: 'Conteúdo',
+    links: [
+      { label: 'Estratégias', href: '/#strategies-title' },
+      { label: 'Blog',        href: '/blog'              },
+    ],
+  },
+  {
+    title: 'Social',
+    links: [
+      { label: 'Instagram',          href: 'https://www.instagram.com/offdata.tsx/', external: true },
+      { label: 'Perfil da Empresa',  href: 'https://share.google/Sw8bCp5a2K4DAPCVn', external: true },
+    ],
+  },
+];
+
+const legalLinks = [
+  { label: 'Política de Privacidade', href: '/privacy-policy'     },
+  { label: 'Termos de Uso',           href: '/terms-and-conditions' },
+  { label: 'Política de Cookies',     href: '/cookie-policy'      },
+];
+---
+
+<footer class="footer">
+  <div class="wrapper_footer">
+
+    <!-- ── Flex principal: newsletter + menu grid ── -->
+    <div class="flex_footer">
+
+      <!-- ── Bloco de inscrição / CTA ── -->
+      <div class="subscribe_newsletter">
+        <!--
+          Submit implementado no próximo prompt.
+          action="#" previne redirecionamento acidental.
+        -->
+        <form class="form_subscribe" id="newsletter-form" action="#" novalidate>
+          <div class="title_subscribe">
+            Fale com<br />a Off-Data em Uberlândia
+          </div>
+          <div class="subscribe_form">
+            <input
+              type="email"
+              name="email"
+              id="newsletter-email"
+              class="input_field w-input"
+              placeholder="E-mail profissional"
+              aria-label="Seu e-mail profissional para receber novidades da Off-Data"
+              autocomplete="email"
+              required
+            />
+            <button
+              type="submit"
+              class="subscribe_button w-button"
+              aria-label="Enviar formulário para falar com a Off-Data"
+            >
+              Enviar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── Grid de menus ── -->
+      <div class="menu_grid">
+        {footerMenus.map((menu) => (
+          <div class="menu_box">
+            <div class="title_menu">{menu.title}</div>
+            <div class="list_links">
+              {menu.links.map(({ label, href, external }) => (
+                <a
+                  href={href}
+                  class="footer_link w-inline-block"
+                  {...(external
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+                >
+                  <div>{label}</div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div><!-- /flex_footer -->
+
+    <!-- ── Linha de copyright ── -->
+    <div class="last_line">
+      <div class="flex_last">
+        <div class="logo_footer">
+          <img
+            src="/images/logo-branca.svg"
+            alt="Off-Data Logotype"
+            width="1651"
+            height="238"
+            decoding="async"
+            loading="lazy"
+          />
+        </div>
+        <div class="mobile_line">
+          <div class="caption_box">&copy;{year} Off-Data</div>
+          <div class="caption_box only_mobile">Todos os direitos reservados.</div>
+        </div>
+      </div>
+
+      <div class="pp_et">
+        <div class="last_pp">
+          {legalLinks.map(({ label, href }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              class="footer_last_link w-inline-block"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+        <div class="caption_box only_desktop">Todos os direitos reservados.</div>
+      </div>
+    </div><!-- /last_line -->
+
+  </div><!-- /wrapper_footer -->
+</footer>
+
+<style>
+  /* ═══════════════════════════════════════════════════════════════════
+     FOOTER OFF-DATA — Estilos estáticos
+     Fonte de verdade: REPORT-001-header-footer.md, seções 2, 3 e 1.
+     Todas as cores via variáveis de globals.css.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  .footer {
+    width: 100vw;
+    height: auto;
+    background: var(--black);
+    color: var(--white);
+    overflow: hidden;
+  }
+
+  /* ── Wrapper ── */
+  /* Tipografia e espaçamento: REPORT-001 § 3 */
+  .wrapper_footer {
+    padding: 4.5em 1.75rem 1.5em;
+  }
+
+  /* ── Flex principal ── */
+  .flex_footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 5rem;
+  }
+
+  /* ─── Bloco de Newsletter ─────────────────────────────────────────── */
+
+  .subscribe_newsletter {
+    width: 35%;
+    flex-shrink: 0;
+  }
+
+  .form_subscribe {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 0;
+  }
+
+  /* Tipografia: REPORT-001 § 2 — .title_subscribe */
+  .title_subscribe {
+    font-size: 2em;
+    font-weight: 500;
+    line-height: .9;
+  }
+
+  .subscribe_form {
+    display: flex;
+    gap: .75em;
+  }
+
+  /* Input — border via var(--border-light) (era rgba(255,255,255,.25)) */
+  .input_field {
+    width: 100%;
+    height: 3.12em;
+    color: var(--white);
+    background: transparent;
+    border: 1px solid var(--border-light);
+    border-radius: .25em;
+    outline: none;
+    padding: 0 1em;
+    font: inherit;
+  }
+
+  /* Placeholder — var(--text-muted-light) (era rgba(255,255,255,.45)) */
+  .input_field::placeholder {
+    color: var(--text-muted-light);
+  }
+
+  .subscribe_button {
+    height: 3.12em;
+    color: var(--white);
+    background: var(--blue);
+    border: 0;
+    border-radius: .25em;
+    padding: .75em 2.5em;
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .25s ease;
+  }
+
+  .subscribe_button:hover {
+    opacity: .85;
+  }
+
+  /* ─── Menu Grid ───────────────────────────────────────────────────── */
+  /* Espaçamento: REPORT-001 § 3 — Desktop col 6em / row 5em */
+  .menu_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 6em;
+    row-gap: 5em;
+  }
+
+  .menu_box {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+  }
+
+  /* Tipografia: REPORT-001 § 2 — .title_menu */
+  /* var(--text-muted-light) substitui rgba(255,255,255,.45) */
+  .title_menu {
+    color: var(--text-muted-light);
+    font-size: .9em;
+    font-weight: 500;
+  }
+
+  .list_links {
+    display: flex;
+    flex-direction: column;
+    gap: .42em;
+  }
+
+  /* Tipografia: REPORT-001 § 2 — .footer_link */
+  .footer_link {
+    color: var(--white);
+    text-decoration: none;
+    font-size: .95em;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: opacity .25s ease;
+  }
+
+  .footer_link:hover {
+    opacity: .65;
+  }
+
+  /* ─── Linha Final ─────────────────────────────────────────────────── */
+  .last_line {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: 20em;
+    gap: 2rem;
+  }
+
+  .flex_last,
+  .pp_et,
+  .last_pp {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.3em;
+  }
+
+  .logo_footer {
+    width: 20em;
+  }
+
+  .logo_footer img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .mobile_line {
+    display: flex;
+    flex-direction: column;
+    gap: .25em;
+  }
+
+  /* Tipografia: REPORT-001 § 2 — .caption_box */
+  /* opacity .45 fiel ao original */
+  .caption_box {
+    opacity: .45;
+    font-size: .9em;
+    font-weight: 500;
+  }
+
+  /* Visibilidade desktop/mobile */
+  .only_mobile {
+    display: none;
+  }
+
+  /* Tipografia: REPORT-001 § 2 — .footer_last_link */
+  /* Compartilha opacity .45 com .caption_box (fiel ao original) */
+  .footer_last_link {
+    opacity: .45;
+    color: var(--white);
+    text-decoration: none;
+    font-size: .9em;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: opacity .25s ease;
+  }
+
+  .footer_last_link:hover {
+    opacity: .65;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     RESPONSIVO — 991px (tablet)
+     REPORT-001 § 3: col-gap menu_grid → 1em, subscribe 42%,
+                     margin-top last_line → 26em
+     ═══════════════════════════════════════════════════════════════════ */
+  @media (max-width: 991px) {
+    .wrapper_footer {
+      padding: 5rem 1.25rem 1.5rem;
+    }
+
+    .subscribe_newsletter {
+      width: 42%;
+    }
+
+    .menu_grid {
+      column-gap: 1em;
+    }
+
+    .title_subscribe {
+      font-size: 3em;
+    }
+
+    .last_line {
+      margin-top: 26em;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     RESPONSIVO — 767px (mobile)
+     REPORT-001 § 3: flex_footer → column, subscribe 100%,
+                     menu_grid col 1em / row 4rem
+     ═══════════════════════════════════════════════════════════════════ */
+  @media (max-width: 767px) {
+    .wrapper_footer {
+      padding: 4.5rem 1rem 1.5rem;
+    }
+
+    .flex_footer {
+      flex-direction: column;
+      gap: 4.5rem;
+    }
+
+    .subscribe_newsletter {
+      width: 100%;
+    }
+
+    /* Tipografia: REPORT-001 § 2 — mobile .title_subscribe */
+    .title_subscribe {
+      font-size: clamp(2.7rem, 10vw, 4.5rem);
+      line-height: .96;
+    }
+
+    .subscribe_form {
+      flex-direction: column;
+      gap: .75rem;
+    }
+
+    .input_field,
+    .subscribe_button {
+      height: 3.4rem;
+      font-size: .95rem;
+    }
+
+    /* Menu grid: col 1em / row 4rem — REPORT-001 § 3 */
+    .menu_grid {
+      width: 100%;
+      grid-template-columns: .75fr 1fr;
+      column-gap: 1em;
+      row-gap: 4rem;
+    }
+
+    .footer_link,
+    .title_menu {
+      font-size: 1rem;
+    }
+
+    .last_line {
+      flex-direction: column;
+      align-items: stretch;
+      margin-top: 5.75rem;
+      gap: .75rem;
+    }
+
+    .flex_last,
+    .pp_et {
+      flex-direction: column;
+      align-items: stretch;
+      gap: .75rem;
+    }
+
+    .last_pp {
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: .75rem 1.2rem;
+    }
+
+    .logo_footer {
+      width: 100%;
+    }
+
+    .caption_box,
+    .footer_last_link {
+      font-size: .9rem;
+    }
+
+    /* Troca visibilidade desktop ↔ mobile */
+    .only_desktop {
+      display: none;
+    }
+
+    .only_mobile {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  // ─── Formulário .form_subscribe — Lógica fiel ao FooterSection.jsx original ──
+  //
+  // AUDITORIA DO ENDPOINT DE API:
+  //   O projeto original (FooterSection.jsx, linha 319) NÃO envia dados para
+  //   nenhum endpoint de API. Após validar o email, ele simplesmente:
+  //     1. Dispara o evento GA4 "newsletter_submit"
+  //     2. Abre o WhatsApp via window.open()
+  //     3. Reseta o form
+  //
+  //   ⚠️  AÇÃO NECESSÁRIA ANTES DE PRODUÇÃO:
+  //       Se houver intenção de capturar o email num servidor/CRM, é necessário
+  //       definir e confirmar um endpoint antes de apontá-lo aqui.
+  //       Ponto de integração marcado com TODO abaixo.
+  //
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  (function initNewsletterForm() {
+    const WHATSAPP_NUMBER = '5534992362596';
+    const WHATSAPP_MSG    = encodeURIComponent(
+      'Olá, vim pelo blog da Off-Data e quero falar com a equipe.'
+    );
+    const WHATSAPP_URL    = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
+
+    const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+    if (!form) return;
+
+    form.addEventListener('submit', async (event: Event) => {
+      // 1. Previne comportamento padrão (redirect / reload)
+      event.preventDefault();
+
+      // 2. Validação do campo de email — idêntica ao original
+      const emailInput = form.querySelector<HTMLInputElement>('input[type="email"]');
+      const isEmailValid =
+        emailInput &&
+        emailInput.value.trim() !== '' &&
+        emailInput.checkValidity();
+
+      if (isEmailValid) {
+        // 3. Tracking GA4 — import dinâmico fiel ao original
+        //    Original: import('../../utils/analytics').then(({ trackEvent }) => { … })
+        try {
+          const { trackEvent } = await import('../utils/analytics');
+          trackEvent('newsletter_submit', {
+            source_page: window.location.pathname,
+            form_name:   'newsletter_footer',
+          });
+        } catch {
+          // Analytics não deve bloquear o fluxo principal
+        }
+
+        // TODO: ENDPOINT DE API — confirmar antes de apontar para produção.
+        // Exemplo de integração futura (descomentável):
+        //
+        // try {
+        //   await fetch('https://api.offdata.com.br/newsletter', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ email: emailInput.value.trim() }),
+        //   });
+        // } catch (err) {
+        //   console.error('[Newsletter] Falha ao enviar para API:', err);
+        // }
+      }
+
+      // 4. Abre WhatsApp — comportamento original (independente de validação)
+      window.open(WHATSAPP_URL, '_blank', 'noopener,noreferrer');
+
+      // 5. Reseta o formulário — comportamento original
+      form.reset();
+    });
+
+    // Feedback visual de validação nativa ao perder foco no input
+    const emailInput = form.querySelector<HTMLInputElement>('input[type="email"]');
+    emailInput?.addEventListener('blur', () => {
+      if (emailInput.value && !emailInput.checkValidity()) {
+        emailInput.style.borderColor = 'rgba(255, 100, 100, .65)';
+      } else {
+        emailInput.style.borderColor = '';
+      }
+    });
+    emailInput?.addEventListener('input', () => {
+      // Remove feedback de erro ao digitar novamente
+      emailInput.style.borderColor = '';
+    });
+  })();
+</script>
