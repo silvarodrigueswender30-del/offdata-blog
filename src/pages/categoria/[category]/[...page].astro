@@ -1,0 +1,403 @@
+---
+/**
+ * src/pages/categoria/[category]/[...page].astro
+ *
+ * Listagem paginada por categoria.
+ * Com base: '/blog', as URLs geradas são:
+ *   /blog/categoria/{slug}/          ← página 1 (page = undefined)
+ *   /blog/categoria/{slug}/2         ← página 2
+ *   etc.
+ *
+ * O [category] param é o SLUG da categoria (via slugify).
+ * O nome original é passado como prop extra do paginate().
+ *
+ * Nota: o usuário solicitou src/pages/blog/categoria/…, mas com
+ * base: '/blog' aquela localização geraria /blog/blog/categoria/…
+ * O caminho correto dentro de src/pages/ é categoria/[category]/[...page].astro.
+ */
+import { getCollection }        from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import type { GetStaticPathsOptions, Page } from 'astro';
+import BaseLayout               from '../../../layouts/BaseLayout.astro';
+import Header                   from '../../../components/Header.astro';
+import Footer                   from '../../../components/Footer.astro';
+import PostCard                 from '../../../components/PostCard.astro';
+import { getReadingTime }       from '../../../utils/readingTime';
+import { slugify }              from '../../../utils/slugify';
+
+// ─── getStaticPaths ────────────────────────────────────────────────────────────
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+  // 1. Todos os posts publicados, do mais recente ao mais antigo
+  const publishedPosts = (
+    await getCollection('posts', ({ data }) => data.draft === false)
+  ).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+  // 2. Monta mapa: slug-da-categoria → { originalName, posts[] }
+  //    Se dois valores de category geram o mesmo slug, a primeira ocorrência
+  //    vence para preservar a caixa original do nome (ex: "SEO Local").
+  const categoryMap = new Map<
+    string,
+    { originalName: string; posts: CollectionEntry<'posts'>[] }
+  >();
+
+  for (const post of publishedPosts) {
+    const catSlug = slugify(post.data.category);
+    if (!categoryMap.has(catSlug)) {
+      categoryMap.set(catSlug, { originalName: post.data.category, posts: [] });
+    }
+    categoryMap.get(catSlug)!.posts.push(post);
+  }
+
+  // 3. Gera as rotas paginadas para cada categoria com pelo menos 1 post
+  const paths: ReturnType<typeof paginate> = [];
+
+  for (const [catSlug, { originalName, posts }] of categoryMap.entries()) {
+    // Categoria sem posts publicados → não gera rota (evita página indexável vazia)
+    if (posts.length === 0) continue;
+
+    const categoryPages = paginate(posts, {
+      // Passa o slug como param dinâmico [category] e o nome original como prop
+      params: { category: catSlug },
+      props:  { categoryName: originalName },
+      pageSize: 12,
+    });
+
+    paths.push(...categoryPages);
+  }
+
+  return paths;
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface Props {
+  page:         Page<CollectionEntry<'posts'>>;
+  categoryName: string;   // nome original, ex: "SEO Local" (não o slug)
+}
+
+const { page, categoryName } = Astro.props;
+const { category: categorySlug } = Astro.params;
+
+const currentPage = page.currentPage;
+const totalPages  = page.lastPage;
+const isFirstPage = currentPage === 1;
+const isEmpty     = page.data.length === 0; // nunca deve ocorrer (filtrado acima)
+
+const prevUrl = page.url.prev ?? null;
+const nextUrl = page.url.next ?? null;
+
+// ─── SEO ──────────────────────────────────────────────────────────────────────
+const canonicalBase = `https://www.offdata.digital/blog/categoria/${categorySlug}/`;
+const canonicalUrl  = isFirstPage ? canonicalBase : `${canonicalBase}${currentPage}`;
+const pageLabel     = isFirstPage ? '' : ` — Página ${currentPage}`;
+
+// ─── Schema.org BreadcrumbList ────────────────────────────────────────────────
+const breadcrumbSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Início',
+      item: 'https://www.offdata.digital/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: 'https://www.offdata.digital/blog/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: categoryName,
+      item: canonicalBase,
+    },
+  ],
+});
+---
+
+<BaseLayout>
+  <Fragment slot="head">
+    <title>Blog Off-Data — {categoryName}{pageLabel}</title>
+    <meta
+      name="description"
+      content={isFirstPage
+        ? `Artigos sobre ${categoryName} publicados pela Off-Data: estratégia, técnica e resultados para empresas premium.`
+        : `Artigos sobre ${categoryName} — página ${currentPage} de ${totalPages}.`}
+    />
+    {/* Página 1 indexável; páginas internas de paginação: noindex */}
+    <meta name="robots" content={isFirstPage ? 'index, follow' : 'noindex, follow'} />
+    <link rel="canonical" href={canonicalUrl} />
+    {prevUrl && <link rel="prev" href={`https://www.offdata.digital${prevUrl}`} />}
+    {nextUrl && <link rel="next" href={`https://www.offdata.digital${nextUrl}`} />}
+    {/* Schema.org BreadcrumbList */}
+    <script type="application/ld+json" set:html={breadcrumbSchema} />
+  </Fragment>
+
+  <Header />
+
+  <main id="blog-main" class="blog-main" data-section="light">
+    <div class="blog-container">
+
+      <!-- ── Breadcrumbs ── -->
+      <nav class="breadcrumbs" aria-label="Localização na hierarquia do site">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item">
+            <a href="https://www.offdata.digital/" class="breadcrumb-link">Início</a>
+          </li>
+          <li class="breadcrumb-separator" aria-hidden="true">/</li>
+          <li class="breadcrumb-item">
+            <a href="/blog/" class="breadcrumb-link">Blog</a>
+          </li>
+          <li class="breadcrumb-separator" aria-hidden="true">/</li>
+          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+            {categoryName}
+          </li>
+        </ol>
+      </nav>
+
+      <!-- ── Cabeçalho da categoria ── -->
+      <header class="blog-header">
+        <h1 class="blog-title">
+          Blog Off-Data
+          <span class="title-category">— {categoryName}</span>
+        </h1>
+        <p class="blog-subtitle">
+          {isEmpty
+            ? 'Novos conteúdos em breve.'
+            : `${page.total} ${page.total === 1 ? 'artigo publicado' : 'artigos publicados'} nesta categoria.`}
+        </p>
+      </header>
+
+      <!-- ── Grid de posts ── -->
+      {isEmpty ? (
+        <div class="empty-state" role="status">
+          <p>Novos conteúdos em breve.</p>
+        </div>
+      ) : (
+        <section
+          class="posts-grid"
+          aria-label={`Artigos da categoria ${categoryName}${pageLabel}`}
+        >
+          {page.data.map((post) => (
+            <PostCard
+              title={post.data.title}
+              description={post.data.description}
+              pubDate={post.data.pubDate}
+              category={post.data.category}
+              coverImage={post.data.coverImage}
+              coverImageAlt={post.data.coverImageAlt}
+              slug={post.id}
+              readingTime={getReadingTime(post.body ?? '')}
+              priority={false}
+            />
+          ))}
+        </section>
+      )}
+
+      <!-- ── Paginação ── -->
+      {!isEmpty && totalPages > 1 && (
+        <nav class="pagination" aria-label="Navegação entre páginas da categoria">
+          {prevUrl ? (
+            <a href={prevUrl} class="pagination-btn pagination-prev" rel="prev">
+              <span class="btn-arrow" aria-hidden="true">←</span>
+              Anterior
+            </a>
+          ) : (
+            <span class="pagination-slot" aria-hidden="true" />
+          )}
+
+          <span class="pagination-info">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          {nextUrl ? (
+            <a href={nextUrl} class="pagination-btn pagination-next" rel="next">
+              Próxima
+              <span class="btn-arrow" aria-hidden="true">→</span>
+            </a>
+          ) : (
+            <span class="pagination-slot" aria-hidden="true" />
+          )}
+        </nav>
+      )}
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  /* ─── Layout ── */
+  .blog-main {
+    min-height: 100svh;
+    padding-top: 6rem;
+    background-color: var(--white);
+  }
+
+  .blog-container {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.75rem 5rem;
+  }
+
+  /* ─── Breadcrumbs ────────────────────────────────────────────────────── */
+  .breadcrumbs {
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35em;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: .8rem;
+    font-weight: 500;
+  }
+
+  .breadcrumb-link {
+    color: rgba(0, 0, 0, .5);
+    text-decoration: none;
+    transition: color 220ms ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--black);
+  }
+
+  .breadcrumb-separator {
+    color: rgba(0, 0, 0, .2);
+    user-select: none;
+  }
+
+  .breadcrumb-current {
+    color: var(--black);
+    font-weight: 500;
+  }
+
+  /* ─── Cabeçalho ─────────────────────────────────────────────────────── */
+  .blog-header {
+    margin-bottom: 3rem;
+  }
+
+  .blog-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 500;
+    line-height: 1.05;
+    color: var(--black);
+    letter-spacing: -.02em;
+    margin-bottom: .5em;
+  }
+
+  .title-category {
+    color: var(--blue);
+  }
+
+  .blog-subtitle {
+    font-size: clamp(.85rem, 2vw, 1rem);
+    font-weight: 400;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, .5);
+  }
+
+  /* ─── Grid ───────────────────────────────────────────────────────────── */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* ─── Estado vazio ───────────────────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 5rem 0;
+    color: rgba(0, 0, 0, .5);
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  /* ─── Paginação ──────────────────────────────────────────────────────── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, .1);
+    gap: 1rem;
+  }
+
+  .pagination-slot {
+    width: 8rem;
+    flex-shrink: 0;
+  }
+
+  .pagination-info {
+    font-size: .85rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, .45);
+  }
+
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5em;
+    background: var(--blue);
+    color: var(--white);
+    font-size: .85rem;
+    font-weight: 500;
+    padding: .6em 1.25em;
+    border-radius: .25em;
+    text-decoration: none;
+    transition: opacity 250ms ease;
+    white-space: nowrap;
+    min-width: 8rem;
+  }
+
+  .pagination-btn:hover {
+    opacity: .85;
+  }
+
+  .pagination-prev { justify-content: flex-start; }
+  .pagination-next { justify-content: flex-end; }
+
+  .btn-arrow {
+    font-size: 1em;
+    line-height: 1;
+  }
+
+  /* ─── Responsivo: 2 colunas (991px) ─────────────────────────────────── */
+  @media (max-width: 991px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .blog-container {
+      padding: 2rem 1.25rem 4rem;
+    }
+  }
+
+  /* ─── Responsivo: 1 coluna (767px) ──────────────────────────────────── */
+  @media (max-width: 767px) {
+    .blog-main {
+      padding-top: 5rem;
+    }
+
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-container {
+      padding: 1.75rem 1rem 3rem;
+    }
+
+    .pagination-slot {
+      display: none;
+    }
+  }
+</style>

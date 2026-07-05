@@ -1,0 +1,702 @@
+---
+/**
+ * src/pages/[slug].astro — Página individual de artigo do blog Off-Data.
+ *
+ * Com base: '/blog', as URLs geradas são:
+ *   /blog/{slug}
+ *
+ * Nota de arquitetura:
+ *   O usuário solicitou src/pages/blog/[slug].astro, mas com base: '/blog'
+ *   aquela localização geraria /blog/blog/{slug}. O path correto é
+ *   src/pages/[slug].astro para servir /blog/{slug}.
+ *
+ * Não há conflito com src/pages/[...page].astro (que gera /blog/2, /blog/3…)
+ * porque ambos usam getStaticPaths: os paths gerados são estritamente disjuntos
+ * (slugs de post nunca são números inteiros).
+ */
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry }  from 'astro:content';
+import BaseLayout                from '../layouts/BaseLayout.astro';
+import Header                   from '../components/Header.astro';
+import Footer                   from '../components/Footer.astro';
+import PostCard                  from '../components/PostCard.astro';
+import TableOfContents           from '../components/TableOfContents.astro';
+import { getReadingTime }        from '../utils/readingTime';
+import { slugify }               from '../utils/slugify';
+import { withBase }              from '../utils/withBase';
+
+// ─── getStaticPaths ────────────────────────────────────────────────────────────
+export async function getStaticPaths() {
+  const posts = await getCollection(
+    'posts',
+    ({ data }) => data.draft === false
+  );
+
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props:  { post },
+  }));
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post }  = Astro.props;
+const { slug }  = Astro.params;
+
+// Renderiza o corpo MDX/MD e captura também os headings
+const { Content, headings } = await render(post);
+
+// ─── Dados do post ─────────────────────────────────────────────────────────────
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  category,
+  coverImage,
+  coverImageAlt,
+  author,
+  noindex,
+} = post.data;
+
+const readingTime   = getReadingTime(post.body ?? '');
+const categorySlug  = slugify(category);
+const categoryHref  = `/blog/categoria/${categorySlug}/`;
+const canonicalUrl  = `https://www.offdata.digital/blog/${slug}`;
+
+// Garante URL absoluta para OG e JSON-LD
+const absoluteCoverImage = coverImage.startsWith('http')
+  ? coverImage
+  : `https://www.offdata.digital${withBase(coverImage)}`;
+
+const formattedDate = pubDate.toLocaleDateString('pt-BR', {
+  day:   'numeric',
+  month: 'long',
+  year:  'numeric',
+});
+
+const datePublished  = pubDate.toISOString();
+const dateModified   = (updatedDate ?? pubDate).toISOString();
+
+// ─── Artigos relacionados ──────────────────────────────────────────────────────
+// Até 3 posts da mesma categoria, excluindo o post atual, do mais recente ao mais antigo.
+const relatedPosts = (
+  await getCollection('posts', ({ data }) =>
+    data.draft === false && data.category === category
+  )
+)
+  .filter((p) => p.id !== post.id)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+// ─── JSON-LD Article ──────────────────────────────────────────────────────────
+const articleSchema = JSON.stringify({
+  '@context':        'https://schema.org',
+  '@type':           'Article',
+  headline:          title,
+  description,
+  image:             absoluteCoverImage,
+  datePublished,
+  dateModified,
+  author: {
+    '@type': 'Organization',
+    name:    author,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name:    'Off-Data',
+    logo: {
+      '@type': 'ImageObject',
+      url:     `https://www.offdata.digital${withBase('/images/logo-branca.svg')}`,
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id':   canonicalUrl,
+  },
+});
+---
+
+<BaseLayout>
+  <Fragment slot="head">
+    <!-- ── Título e description ── -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- ── Robots ── -->
+    {noindex
+      ? <meta name="robots" content="noindex, follow" />
+      : <meta name="robots" content="index, follow" />
+    }
+
+    <!-- ── Canonical ── -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- ── Open Graph ── -->
+    <meta property="og:type"        content="article" />
+    <meta property="og:url"         content={canonicalUrl} />
+    <meta property="og:title"       content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image"       content={absoluteCoverImage} />
+    <meta property="og:locale"      content="pt_BR" />
+    <meta property="article:published_time" content={datePublished} />
+    <meta property="article:modified_time"  content={dateModified} />
+    <meta property="article:section"        content={category} />
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image"       content={absoluteCoverImage} />
+
+    <!-- ── JSON-LD Article ── -->
+    <script type="application/ld+json" set:html={articleSchema} />
+  </Fragment>
+
+  <Header />
+
+  <main class="post-main" id="post-main" data-section="light">
+    <div class="post-container">
+
+      <!-- ── Breadcrumbs ── -->
+      <nav class="breadcrumbs" aria-label="Localização na hierarquia do site">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item">
+            <a href="https://www.offdata.digital/" class="breadcrumb-link">Início</a>
+          </li>
+          <li class="breadcrumb-sep" aria-hidden="true">/</li>
+          <li class="breadcrumb-item">
+            <a href="/blog/" class="breadcrumb-link">Blog</a>
+          </li>
+          <li class="breadcrumb-sep" aria-hidden="true">/</li>
+          <li class="breadcrumb-item">
+            <a href={categoryHref} class="breadcrumb-link">{category}</a>
+          </li>
+          <li class="breadcrumb-sep" aria-hidden="true">/</li>
+          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+            {title}
+          </li>
+        </ol>
+      </nav>
+
+      <!-- ── Cabeçalho do artigo ── -->
+      <header class="post-header">
+        <div class="post-header-text">
+          <a href={categoryHref} class="post-category-badge">
+            {category}
+          </a>
+
+          <h1 class="post-title">{title}</h1>
+
+          <div class="post-meta" aria-label="Informações do artigo">
+            <span class="meta-author">{author}</span>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <time datetime={datePublished} class="meta-date">{formattedDate}</time>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <span class="meta-reading">{readingTime} min de leitura</span>
+          </div>
+        </div>
+
+        <figure class="post-cover-figure">
+          <div class="post-cover-wrap">
+            <img
+              src={withBase(coverImage)}
+              alt={coverImageAlt}
+              class="post-cover-img"
+              loading="eager"
+              fetchpriority="high"
+              decoding="sync"
+              width="1200"
+              height="675"
+            />
+          </div>
+          {post.data.coverImageCredit && (
+            <p class="cover-credit">
+              {post.data.coverImageSourceUrl
+                ? (
+                    <a
+                      href={post.data.coverImageSourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {post.data.coverImageCredit}
+                    </a>
+                  )
+                : post.data.coverImageCredit}
+            </p>
+          )}
+        </figure>
+      </header>
+
+      <!-- ── Índice do artigo (Table of Contents) ── -->
+      <TableOfContents headings={headings} />
+
+      <!-- ── Corpo do artigo ── -->
+      <article class="article-body" lang="pt-BR">
+        <Content />
+      </article>
+
+      <!-- ── Artigos relacionados ── -->
+      {relatedPosts.length > 0 && (
+        <section class="related-section" aria-labelledby="related-heading">
+          <h2 id="related-heading" class="related-heading">
+            Artigos relacionados
+          </h2>
+          <div class="related-grid">
+            {relatedPosts.map((related) => (
+              <PostCard
+                title={related.data.title}
+                description={related.data.description}
+                pubDate={related.data.pubDate}
+                category={related.data.category}
+                coverImage={related.data.coverImage}
+                coverImageAlt={related.data.coverImageAlt}
+                slug={related.id}
+                readingTime={getReadingTime(related.body ?? '')}
+                priority={false}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<!-- ─── Estilos escopados do layout da página ─────────────────────────────── -->
+<style>
+  /* ── Estrutura ── */
+  .post-main {
+    padding-top: 6rem; /* compensa header fixo */
+    padding-bottom: 0;
+    background-color: var(--white);
+  }
+
+  .post-container {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.75rem 5rem;
+  }
+
+  /* ── Breadcrumbs ── */
+  .breadcrumbs {
+    margin-bottom: 2.25rem;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35em;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 500;
+  }
+
+  .breadcrumb-link {
+    color: rgba(0, 0, 0, .45);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--black);
+  }
+
+  .breadcrumb-sep {
+    color: rgba(0, 0, 0, .2);
+    user-select: none;
+  }
+
+  .breadcrumb-current {
+    color: rgba(0, 0, 0, .75);
+    /* Trunca o título no breadcrumb para não ocupar 3 linhas */
+    max-width: 28ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Cabeçalho do artigo ── */
+  .post-header {
+    width: 100%;
+    margin: 0 auto 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .post-header-text {
+    max-width: 44rem;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .post-category-badge {
+    display: inline-flex;
+    align-self: flex-start;
+    background-color: var(--blue);
+    color: var(--white);
+    font-size: .72em;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .35em .75em;
+    border-radius: .25em;
+    text-decoration: none;
+    transition: opacity 250ms ease;
+  }
+
+  .post-category-badge:hover {
+    opacity: .8;
+  }
+
+  .post-title {
+    font-size: clamp(2.2rem, 4vw + 1rem, 4.2rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    margin: 0;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5em;
+    font-size: .82rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, .45);
+  }
+
+  .meta-sep {
+    opacity: .5;
+  }
+
+  .meta-date,
+  .meta-author,
+  .meta-reading {
+    white-space: nowrap;
+  }
+
+  /* Imagem de capa — largura total do header (44rem) */
+  .post-cover-figure {
+    margin: 0;
+    /* overflow visível para que .cover-credit apareça abaixo da imagem */
+  }
+
+  .post-cover-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 21 / 9;
+    background-color: color-mix(in srgb, var(--blue) 25%, var(--black));
+  }
+
+  .post-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Crédito da imagem — discreto, abaixo da capa */
+  .cover-credit {
+    margin: .45em 0 0;
+    font-size: .75em;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text-muted-light);   /* rgba(255,255,255,.45) */
+    text-align: right;
+  }
+
+  .cover-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: .15em;
+    transition: opacity 200ms ease;
+  }
+
+  .cover-credit a:hover {
+    opacity: .7;
+  }
+
+  /* ── Artigos relacionados ── */
+  .related-section {
+    margin-top: 5rem;
+    padding-top: 3rem;
+    border-top: 1px solid rgba(0, 0, 0, .1);
+  }
+
+  .related-heading {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--black);
+    margin-bottom: 1.75rem;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  /* ── Responsivo 991px ── */
+  @media (max-width: 991px) {
+    .post-container {
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ── Responsivo 767px ── */
+  @media (max-width: 767px) {
+    .post-main {
+      padding-top: 5rem;
+    }
+
+    .post-container {
+      padding: 1.75rem 1rem 3rem;
+    }
+
+    .post-header {
+      gap: 2rem;
+    }
+
+    .post-header-text {
+      gap: 1rem;
+    }
+
+    .post-cover-wrap {
+      aspect-ratio: 16 / 9;
+    }
+
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .related-section {
+      margin-top: 3.5rem;
+      padding-top: 2rem;
+    }
+  }
+</style>
+
+<!-- ─── Tipografia do corpo do artigo (is:global — Content() injeta elementos) ── -->
+<style is:global>
+  /* Scoped ao .article-body para não vazar para fora do componente */
+
+  .article-body {
+    max-width: 44rem;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--black);
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* ── Parágrafos ── */
+  .article-body p {
+    margin-top: 0;
+    margin-bottom: 1.5em;
+  }
+
+  /* ── Headings ── */
+  .article-body h2,
+  .article-body h3,
+  .article-body h4,
+  .article-body h5,
+  .article-body h6 {
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    color: var(--black);
+    margin-top: 2.5em;
+    margin-bottom: .75em;
+  }
+
+  .article-body h2 {
+    font-size: clamp(1.6rem, 2vw + 1rem, 2.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--blue);
+  }
+
+  .article-body h3 {
+    font-size: clamp(1.3rem, 1.2vw + 1rem, 1.8rem);
+  }
+
+  .article-body h4 { font-size: 1.05rem; }
+  .article-body h5,
+  .article-body h6 { font-size: 1rem; }
+
+  /* ── Listas ── */
+  .article-body ul,
+  .article-body ol {
+    padding-left: 1.5em;
+    margin-top: 0;
+    margin-bottom: 1.5em;
+  }
+
+  .article-body li {
+    margin-bottom: .4em;
+    line-height: 1.7;
+  }
+
+  .article-body li > ul,
+  .article-body li > ol {
+    margin-top: .4em;
+    margin-bottom: 0;
+  }
+
+  /* ── Links ── */
+  .article-body a {
+    color: var(--blue);
+    text-decoration: underline;
+    text-underline-offset: .2em;
+    transition: opacity 220ms ease;
+  }
+
+  .article-body a:hover {
+    opacity: .8;
+  }
+
+  /* ── Blockquote ── */
+  .article-body blockquote {
+    border-left: 3px solid var(--blue);
+    margin: 2em 0;
+    padding: .75em 1.25em;
+    font-style: italic;
+    color: rgba(0, 0, 0, .65);
+    background: rgba(4, 74, 179, .06);
+    border-radius: 0 .25em .25em 0;
+  }
+
+  .article-body blockquote p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Código inline ── */
+  .article-body code {
+    font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    font-size: .88em;
+    background: rgba(0, 0, 0, .05);
+    border: 1px solid rgba(0, 0, 0, .1);
+    padding: .15em .4em;
+    border-radius: .25em;
+    color: rgba(0, 0, 0, .9);
+  }
+
+  /* ── Bloco de código ── */
+  .article-body pre {
+    background: rgba(0, 0, 0, .03);
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: .5em;
+    padding: 1.25em 1.5em;
+    overflow-x: auto;
+    margin: 1.75em 0;
+    line-height: 1.55;
+  }
+
+  .article-body pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: .85em;
+  }
+
+  /* ── Imagens inline ── */
+  .article-body img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    margin: 2rem 0;
+    object-fit: cover;
+  }
+
+  .article-body figure {
+    margin: 2em 0;
+  }
+
+  .article-body figcaption {
+    text-align: center;
+    font-size: .8em;
+    color: rgba(0, 0, 0, .5);
+    margin-top: .6em;
+  }
+
+  /* ── Linha horizontal ── */
+  .article-body hr {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, .12);
+    margin: 2.5em 0;
+  }
+
+  /* ── Tabelas ── */
+  .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75em 0;
+    font-size: .9em;
+  }
+
+  .article-body th,
+  .article-body td {
+    padding: .65em 1em;
+    border: 1px solid rgba(0, 0, 0, .12);
+    text-align: left;
+  }
+
+  .article-body th {
+    font-weight: 500;
+    background: rgba(0, 0, 0, .05);
+    color: var(--black);
+  }
+
+  .article-body td {
+    color: rgba(0, 0, 0, .75);
+  }
+
+  /* ── Strong / Em ── */
+  .article-body strong {
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .article-body em {
+    font-style: italic;
+    color: rgba(0, 0, 0, .8);
+  }
+
+  /* ── Responsivo 767px ── */
+  @media (max-width: 767px) {
+    .article-body {
+      font-size: .95rem;
+    }
+
+    .article-body h2 { font-size: 1.3rem; }
+    .article-body h3 { font-size: 1.1rem; }
+
+    .article-body pre {
+      padding: 1em;
+      font-size: .82rem;
+    }
+  }
+</style>

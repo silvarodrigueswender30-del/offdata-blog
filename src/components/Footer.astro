@@ -64,6 +64,7 @@ const legalLinks = [
   { label: 'Termos de Uso',           href: '/terms-and-conditions' },
   { label: 'Política de Cookies',     href: '/cookie-policy'      },
 ];
+import { withBase } from '../utils/withBase';
 ---
 
 <footer class="footer">
@@ -132,7 +133,7 @@ const legalLinks = [
       <div class="flex_last">
         <div class="logo_footer">
           <img
-            src="/images/logo-branca.svg"
+            src={withBase('/images/logo-branca.svg')}
             alt="Off-Data Logotype"
             width="1651"
             height="238"
@@ -532,7 +533,7 @@ const legalLinks = [
         // Exemplo de integração futura (descomentável):
         //
         // try {
-        //   await fetch('https://api.offdata.com.br/newsletter', {
+        //   await fetch('https://api.www.offdata.digital/newsletter', {
         //     method: 'POST',
         //     headers: { 'Content-Type': 'application/json' },
         //     body: JSON.stringify({ email: emailInput.value.trim() }),

@@ -16,6 +16,8 @@ const WHATSAPP_MSG    = encodeURIComponent(
 );
 const WHATSAPP_URL    = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
 
+import { withBase } from '../utils/withBase';
+
 const navLinks = [
   { label: 'Início',      href: '/#home'             },
   { label: 'Serviços',    href: '/#products'          },
@@ -45,18 +47,18 @@ const mobileLinks = [
 
       <!-- ── Logo ─────────────────────────────────────────────── -->
       <div class="logo_box">
-        <a href="https://offdata.com.br/" aria-label="Off-Data" class="logotype w-inline-block">
+        <a href="https://www.offdata.digital/" aria-label="Off-Data" class="logotype w-inline-block">
           <!-- data-logo permite ao JS trocar src em is-light-section -->
           <img
-            src="/images/logo-branca.svg"
+            src={withBase('/images/logo-branca.svg')}
             alt="Off-Data Engenharia Digital"
             width="1651"
             height="238"
             decoding="async"
             fetchpriority="high"
             class="svg_logo"
-            data-logo-white="/images/logo-branca.svg"
-            data-logo-blue="/images/logo-azul.svg"
+            data-logo-white={withBase('/images/logo-branca.svg')}
+            data-logo-blue={withBase('/images/logo-azul.svg')}
           />
         </a>
       </div>
@@ -87,9 +89,9 @@ const mobileLinks = [
         >
           <div class="flex_button">
             <div class="text_header">Entre em contato</div>
-            <div class="icon_arrow">
+            <div class="icon_arrow" style={`--arrow-url: url('${withBase("/images/arrow-diagonal.svg")}');`}>
               <img
-                src="/images/arrow-diagonal.svg"
+                src={withBase('/images/arrow-diagonal.svg')}
                 alt=""
                 aria-hidden="true"
                 width="14"
@@ -607,7 +609,7 @@ const mobileLinks = [
       top: 50%;
       width: 14px;
       height: 14px;
-      background: url('/images/arrow-diagonal.svg') center / contain no-repeat;
+      background: var(--arrow-url) center / contain no-repeat;
       transform: translate(calc(-50% - 24px), calc(-50% + 24px));
       opacity: 0;
       transition:

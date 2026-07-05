@@ -1,0 +1,83 @@
+---
+export interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+export interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+// Filtra apenas H2
+const toc = headings.filter((heading) => heading.depth === 2);
+---
+
+{toc.length >= 3 && (
+  <nav class="toc-card" aria-label="Índice do artigo">
+    <h2 class="toc-title">Neste artigo</h2>
+    <ul class="toc-list">
+      {toc.map((heading) => (
+        <li class="toc-item">
+          <a href={`#${heading.slug}`} class="toc-link">
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+  .toc-card {
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+    
+    /* Alinha com a largura do corpo do texto */
+    max-width: 44rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .toc-title {
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--blue);
+    margin: 0 0 1.25rem 0;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .toc-item {
+    line-height: 1.4;
+  }
+
+  .toc-link {
+    color: rgba(0, 0, 0, 0.7);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 200ms ease;
+  }
+
+  .toc-link:hover,
+  .toc-link:focus-visible {
+    color: var(--black);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

@@ -1,42 +1,65 @@
 ---
 /**
- * src/pages/index.astro — Página 1 da listagem do blog.
- * Páginas 2, 3… são geradas por src/pages/[...page].astro.
+ * src/pages/[...page].astro — Páginas 2, 3, … da listagem do blog.
+ * Página 1 é servida por src/pages/index.astro (mesmo layout).
  *
- * Com base: '/blog', esta página serve em: www.offdata.digital/blog/
+ * Com base: '/blog', as URLs geradas são:
+ *   /blog/2, /blog/3, etc.
+ *
+ * Nota de arquitetura:
+ *   O usuário solicitou src/pages/blog/[...page].astro, mas com base: '/blog'
+ *   aquela localização geraria /blog/blog/2 (caminho duplicado). A localização
+ *   correta para servir /blog/2 é src/pages/[...page].astro.
  */
-import { getCollection } from 'astro:content';
-import BaseLayout      from '../layouts/BaseLayout.astro';
-import Header          from '../components/Header.astro';
-import Footer          from '../components/Footer.astro';
-import PostCard        from '../components/PostCard.astro';
-import { getReadingTime } from '../utils/readingTime';
+import { getCollection }   from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import type { GetStaticPathsOptions, Page } from 'astro';
+import BaseLayout          from '../layouts/BaseLayout.astro';
+import Header              from '../components/Header.astro';
+import Footer              from '../components/Footer.astro';
+import PostCard            from '../components/PostCard.astro';
+import { getReadingTime }  from '../utils/readingTime';
 
-const PAGE_SIZE = 12;
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+  const allPosts = (
+    await getCollection('posts', ({ data }) => data.draft === false)
+  ).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const allPosts = (
-  await getCollection('posts', ({ data }) => data.draft === false)
-).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  // Gera todas as páginas com paginate(), depois filtra para retornar
+  // apenas as páginas 2+ (página 1 é gerenciada por index.astro).
+  const allPages = paginate(allPosts, { pageSize: 12 });
+  return allPages.filter(({ props }) => (props as { page: Page<CollectionEntry<'posts'>> }).page.currentPage > 1);
+}
 
-const posts        = allPosts.slice(0, PAGE_SIZE);
-const totalPages   = Math.ceil(allPosts.length / PAGE_SIZE);
-const hasNextPage  = totalPages > 1;
-const isEmpty      = allPosts.length === 0;
+interface Props {
+  page: Page<CollectionEntry<'posts'>>;
+}
 
-const prevUrl: string | null = null;                     // página 1: sem anterior
-const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
+const { page } = Astro.props;
+const totalPages   = page.lastPage;
+const currentPage  = page.currentPage;
+const isEmpty      = page.data.length === 0;
+
+// URLs de navegação fornecidas pelo objeto page do Astro
+const prevUrl = page.url.prev ?? null;
+const nextUrl = page.url.next ?? null;
+
+// Meta SEO
+const canonicalUrl = `https://www.offdata.digital/blog/${currentPage}`;
 ---
 
 <BaseLayout>
   <Fragment slot="head">
-    <title>Blog — Off-Data Engenharia Digital</title>
+    <title>Blog — Off-Data | Página {currentPage}</title>
     <meta
       name="description"
-      content="Artigos técnicos sobre SEO, performance web, tráfego pago e estratégia digital para empresas premium em Uberlândia e Triângulo Mineiro."
+      content={`Artigos técnicos sobre SEO, performance web, tráfego pago e estratégia digital. Página ${currentPage} de ${totalPages}.`}
     />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://www.offdata.digital/blog/" />
-    {hasNextPage && <link rel="next" href={`https://www.offdata.digital/blog/2`} />}
+    {/* Páginas internas do índice não precisam ser indexadas individualmente */}
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={canonicalUrl} />
+    {prevUrl && <link rel="prev" href={`https://www.offdata.digital${prevUrl}`} />}
+    {nextUrl && <link rel="next" href={`https://www.offdata.digital${nextUrl}`} />}
   </Fragment>
 
   <Header />
@@ -58,8 +81,8 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
           <p>Novos conteúdos em breve.</p>
         </div>
       ) : (
-        <section class="posts-grid" aria-label="Lista de artigos">
-          {posts.map((post, index) => (
+        <section class="posts-grid" aria-label={`Lista de artigos — página ${currentPage}`}>
+          {page.data.map((post) => (
             <PostCard
               title={post.data.title}
               description={post.data.description}
@@ -69,26 +92,35 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
               coverImageAlt={post.data.coverImageAlt}
               slug={post.id}
               readingTime={getReadingTime(post.body ?? '')}
-              priority={index === 0}
+              priority={false}
             />
           ))}
         </section>
       )}
 
       <!-- ── Paginação ── -->
-      {!isEmpty && totalPages > 1 && (
+      {!isEmpty && (
         <nav class="pagination" aria-label="Navegação entre páginas do blog">
-          <span class="pagination-slot pagination-prev" aria-hidden="true" />
+          {prevUrl ? (
+            <a href={prevUrl} class="pagination-btn pagination-prev" rel="prev">
+              <span class="btn-arrow" aria-hidden="true">←</span>
+              Anterior
+            </a>
+          ) : (
+            <span class="pagination-slot" aria-hidden="true" />
+          )}
 
           <span class="pagination-info">
-            Página 1 de {totalPages}
+            Página {currentPage} de {totalPages}
           </span>
 
-          {nextUrl && (
+          {nextUrl ? (
             <a href={nextUrl} class="pagination-btn pagination-next" rel="next">
               Próxima
               <span class="btn-arrow" aria-hidden="true">→</span>
             </a>
+          ) : (
+            <span class="pagination-slot" aria-hidden="true" />
           )}
         </nav>
       )}
@@ -103,7 +135,7 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
   /* ── Layout ── */
   .blog-main {
     min-height: 100svh;
-    padding-top: 6rem; /* compensa o header fixo */
+    padding-top: 6rem;
     background-color: var(--white);
   }
 
@@ -163,7 +195,7 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
   }
 
   .pagination-slot {
-    width: 8rem; /* espelho do botão para manter o texto centrado */
+    width: 8rem;
     flex-shrink: 0;
   }
 
@@ -186,10 +218,19 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
     text-decoration: none;
     transition: opacity 250ms ease;
     white-space: nowrap;
+    min-width: 8rem;
   }
 
   .pagination-btn:hover {
     opacity: .85;
+  }
+
+  .pagination-prev {
+    justify-content: flex-start;
+  }
+
+  .pagination-next {
+    justify-content: flex-end;
   }
 
   .btn-arrow {
@@ -220,10 +261,6 @@ const nextUrl: string | null = hasNextPage ? '/blog/2' : null;
 
     .blog-container {
       padding: 2rem 1rem 3rem;
-    }
-
-    .blog-title {
-      margin-bottom: .4em;
     }
 
     .pagination-slot {

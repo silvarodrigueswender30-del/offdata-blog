@@ -1,0 +1,292 @@
+---
+/**
+ * src/components/PostCard.astro
+ * Card de artigo para listagem do blog Off-Data.
+ *
+ * Padrão "stretched-link": o <a> do título é expandido via ::after para cobrir
+ * todo o card, evitando <a> aninhados (inválido em HTML). O badge de categoria
+ * fica acima do pseudo-elemento com z-index superior e usa stopPropagation.
+ */
+import { withBase } from '../utils/withBase';
+import { slugify } from '../utils/slugify';
+
+export interface Props {
+  title:       string;
+  description: string;
+  pubDate:     Date;
+  category:    string;
+  coverImage:  string;
+  coverImageAlt: string;
+  slug:        string;
+  readingTime: number;
+  /** Se true, carrega a imagem com loading="eager" e fetchpriority="high"
+   *  (usar no primeiro card visível acima da dobra). */
+  priority?:   boolean;
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  category,
+  coverImage,
+  coverImageAlt,
+  slug,
+  readingTime,
+  priority = false,
+} = Astro.props;
+
+const postHref     = `/blog/${slug}`;
+const categorySlug = slugify(category);
+const categoryHref = `/blog/categoria/${categorySlug}`;
+
+const formattedDate = pubDate.toLocaleDateString('pt-BR', {
+  day:   'numeric',
+  month: 'long',
+  year:  'numeric',
+});
+---
+
+<article class="post-card">
+
+  <!-- ── Imagem de capa ── -->
+  <div class="card-cover">
+    <img
+      src={withBase(coverImage)}
+      alt={coverImageAlt}
+      class="cover-img"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding={priority ? 'sync' : 'async'}
+      width="800"
+      height="450"
+    />
+  </div>
+
+  <!-- ── Corpo do card ── -->
+  <div class="card-body">
+
+    <!-- Badge de categoria — z-index acima do stretched-link -->
+    <a
+      href={categoryHref}
+      class="category-badge"
+      aria-label={`Ver artigos da categoria ${category}`}
+      data-category-link
+    >
+      {category}
+    </a>
+
+    <!-- Título com stretched-link (::after cobre o card inteiro) -->
+    <h3 class="card-title">
+      <a href={postHref} class="card-link">
+        {title}
+      </a>
+    </h3>
+
+    <!-- Descrição truncada via CSS line-clamp -->
+    <p class="card-description">{description}</p>
+
+    <!-- Meta: data + tempo de leitura -->
+    <div class="card-meta" aria-label={`Publicado em ${formattedDate}, leitura de ${readingTime} minutos`}>
+      <time datetime={pubDate.toISOString()} class="meta-date">
+        {formattedDate}
+      </time>
+      <span class="meta-sep" aria-hidden="true">·</span>
+      <span class="meta-reading">{readingTime} min de leitura</span>
+    </div>
+
+  </div>
+</article>
+
+<!-- stopPropagation no badge: impede que o clique ative o stretched-link -->
+<script>
+  document.querySelectorAll('[data-category-link]').forEach((link) => {
+    link.addEventListener('click', (e) => e.stopPropagation());
+  });
+</script>
+
+<style>
+  /* ═══════════════════════════════════════════════════════════════
+     POST CARD — Off-Data Blog
+     Tokens: globals.css (var(--blue), var(--black), var(--white))
+     Tipografia: PP Neue Montreal (herdada do body)
+     ═══════════════════════════════════════════════════════════════ */
+
+  .post-card {
+    position: relative;           /* âncora do stretched-link */
+    display: flex;
+    flex-direction: column;
+    background-color: var(--white);
+    border-radius: .5em;
+    border: 1px solid rgba(0, 0, 0, .08);
+    overflow: hidden;
+    transition:
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 380ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .08);
+  }
+
+  /* ── Imagem de capa ── */
+  .card-cover {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: color-mix(in srgb, var(--blue) 30%, var(--black));
+  }
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .post-card:hover .cover-img {
+    transform: scale(1.04);
+  }
+
+  /* ── Corpo ── */
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: .75em;
+    padding: 1.25em 1.375em 1.5em;
+    flex: 1;
+  }
+
+  /* ── Badge de categoria ── */
+  /* z-index: 2 → fica acima do ::after do stretched-link (z-index: 1) */
+  .category-badge {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-self: flex-start;
+    background-color: var(--blue);
+    color: var(--white);
+    font-size: .72em;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .35em .75em;
+    border-radius: .25em;
+    text-decoration: none;
+    transition: opacity 250ms ease;
+    white-space: nowrap;
+  }
+
+  .category-badge:hover {
+    opacity: .8;
+  }
+
+  /* ── Título com stretched-link ── */
+  .card-title {
+    font-size: 1.05em;
+    font-weight: 500;
+    line-height: 1.25;
+    margin: 0;
+    color: var(--black);
+  }
+
+  .card-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /*
+   * Stretched-link: o ::after cobre toda a área do .post-card (position: relative).
+   * Isso torna o card inteiro clicável via o link do título,
+   * sem usar <a> aninhados (inválido em HTML5).
+   */
+  .card-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .post-card:hover .card-link {
+    text-decoration: underline;
+    text-underline-offset: .2em;
+  }
+
+  /* ── Descrição ── */
+  .card-description {
+    font-size: .88em;
+    font-weight: 400;
+    line-height: 1.55;
+    color: rgba(0, 0, 0, .65);
+    margin: 0;
+    /* Truncar em 2 linhas */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Meta ── */
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: .5em;
+    font-size: .8em;
+    font-weight: 500;
+    color: rgba(0, 0, 0, .45);
+    margin-top: auto;        /* empurra para o rodapé do card */
+    padding-top: .75em;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+  }
+
+  .meta-date,
+  .meta-reading {
+    white-space: nowrap;
+  }
+
+  .meta-sep {
+    opacity: .5;
+  }
+
+  /* ── Focus visível (acessibilidade) ── */
+  .card-link:focus-visible::after {
+    outline: 2px solid var(--black);
+    outline-offset: 3px;
+  }
+
+  .category-badge:focus-visible {
+    outline: 2px solid var(--black);
+    outline-offset: 3px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     RESPONSIVO — 767px
+     ═══════════════════════════════════════════════════════════════ */
+  @media (max-width: 767px) {
+    .card-body {
+      padding: 1em 1.1em 1.25em;
+      gap: .6em;
+    }
+
+    .card-title {
+      font-size: 1em;
+    }
+
+    .category-badge {
+      font-size: .7em;
+    }
+
+    .card-description {
+      font-size: .85em;
+    }
+
+    .card-meta {
+      font-size: .76em;
+    }
+  }
+</style>
