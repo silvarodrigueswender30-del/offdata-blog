@@ -96,78 +96,8 @@ Regra: uma palavra-chave "cabeça" só pode ser alvo principal de UM post.
 Variações da mesma palavra-chave (ex: "seo local" e "o que é seo local") vão
 pro MESMO post, uma como alvo principal e outra como secundária no texto.
 
-## Passo 6 — As 3 camadas de palavra-chave (aplicar em TODO post)
-
-Toda palavra-chave escrita deve, sempre que fizer sentido no contexto, cruzar
-três camadas simultaneamente — isso constrói autoridade nacional sem abrir
-mão da conversão local:
-
-- **Camada 1 — Nacional/técnica:** a palavra que dá autoridade temática
-  (ex: SEO, SEO Técnico, Google Ads, Automação Comercial)
-- **Camada 2 — Comercial:** conecta ao serviço vendido pela Off-Data
-  (ex: Agência SEO, Consultoria SEO, Desenvolvimento Web)
-- **Camada 3 — Geográfica:** Uberlândia, Triângulo Mineiro, Minas Gerais —
-  citada naturalmente no texto, nunca forçada
-
-Regra prática: em vez de "SEO ainda vale a pena", escrever "Empresas de
-Uberlândia que investem em SEO conseguem construir presença digital
-consistente na região". Mesma informação, mas a camada geográfica entra
-sem soar forçada porque o assunto já tinha relação comercial direta com o
-público local.
-
-**Exceção importante:** essa camada geográfica só entra quando o tema já
-tem intenção comercial/local plausível. Não forçar "Uberlândia" em
-conteúdo de audiência nacional/técnica (ver Passo 8 — trilha experimental).
-
-## Passo 7 — Banco de perguntas reais por serviço (candidatas a Tier 1/2)
-
-Esta lista vem de mapeamento por linha de serviço, não de ferramenta de
-keyword ainda — **cada uma precisa ser validada no SEMrush/Ubersuggest
-antes de sair de "Candidato" para "Aprovado"** (ver mudança na tabela de
-controle, Passo 9). É a base mais valiosa que temos porque bate direto com
-intenção comercial real de quem contrata a Off-Data.
-
-| Serviço | Exemplos de perguntas candidatas |
-|---|---|
-| Criação de Sites | "Vale a pena fazer um site para minha empresa?", "Meu Instagram substitui um site?", "Site ou Landing Page?" |
-| SEO Local | "Como aparecer no Google?", "Como aparecer no Google Maps?", "SEO ou Google Ads?" |
-| Google Ads | "Vale a pena anunciar no Google?", "Quanto custa um clique?", "Google Ads ou Meta Ads?" |
-| Landing Pages | "Landing Page funciona?", "Landing Page ou Site?" |
-| Performance Web | "Meu site está lento?", "O que são Core Web Vitals?" |
-| Automação Comercial | "Como integrar WhatsApp ao site?", "Como automatizar meu atendimento?" |
-| Autoridade Digital | "O que é EEAT?", "Como minha empresa transmite mais confiança?" |
-| Consultoria Digital | "Minha empresa precisa de marketing?", "Como fazer diagnóstico digital?" |
-| Google Business Profile | "Como criar Perfil da Empresa?", "Como conseguir avaliações no Google?" |
-
-Cada linha desta tabela deve virar uma entrada individual na tabela de
-controle (Passo 9) — com Tier atribuído SÓ depois de validar volume/
-dificuldade real, não antes.
-
-## Passo 8 — Trilha experimental: GEO/AEO (baixa prioridade, separada)
-
-GEO (Generative Engine Optimization) e AEO (Answer Engine Optimization) são
-tendência real e vale explorar — mas o público que busca "o que é GEO" é
-majoritariamente outro profissional de marketing, não o cliente-alvo da
-Off-Data (dono de negócio local). Isso significa: bom para tese de marca/
-autoridade entre pares, ruim para conversão direta.
-
-Regra: **máximo 2-3 posts nessa trilha**, tratados como aposta especulativa,
-nunca competindo por prioridade com os Tiers 1/2 de conteúdo comercial real
-(Passo 7). Não forçar palavra-chave geográfica nesses posts — o público
-não tem intenção local, forçar "Uberlândia" aqui é keyword stuffing sem
-propósito.
-
-## Passo 9 — Atualização da tabela de controle: novo estágio "Candidato"
-
-A tabela de controle (antigo Passo 5) ganha um estágio antes de "A
-escrever": toda palavra-chave nasce como **Candidato** (sem dado validado)
-e só avança pra **Validado** depois de conferida no SEMrush/Ubersuggest com
-número real de volume e dificuldade. Nunca escrever post com palavra-chave
-ainda em estágio Candidato — é assim que se evita repetir o erro de basear
-conteúdo em número inventado.
-
-| Palavra-chave alvo | Pilar | Camada 3 (geo) | Tier | Status | Slug |
-|---|---|---|---|---|---|
-| como aparecer no google meu negócio | SEO Local | Sim | 1 | Publicado | como-aparecer-google-meu-negocio |
-| vale a pena fazer um site para minha empresa | Criação de Sites | Sim | — | Candidato | — |
-| o que é geo (generative engine optimization) | GEO/AEO (experimental) | Não | — | Candidato | — |
+## Entregável desta etapa
+Um arquivo `keyword-cluster-map.md` (cópia deste template preenchido com dados
+reais) guardado na raiz do repo do blog. Antes de cada sessão de escrita, o
+Antigravity lê esse arquivo, marca a linha usada como "Publicado" e preenche
+o slug.

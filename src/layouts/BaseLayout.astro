@@ -5,6 +5,7 @@
 // Cada página injeta seu próprio <head> via <slot name="head" />.
 // Header e Footer serão adicionados nos próximos prompts.
 import '../styles/globals.css';
+import { withBase } from '../utils/withBase';
 ---
 
 <!doctype html>
@@ -12,6 +13,7 @@ import '../styles/globals.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/isologoazul.svg")} />
     <slot name="head" />
   </head>
   <body>
