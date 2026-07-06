@@ -1,0 +1,64 @@
+---
+/**
+ * src/components/MDXImage.astro
+ * Componente de imagem customizado para conteúdo MDX.
+ *
+ * Substitui automaticamente toda tag ![alt](src) do Markdown.
+ * Aplica withBase() para corrigir o base path /blog em produção,
+ * além de injetar atributos de SEO e performance (lazy, decoding,
+ * width/height para evitar CLS).
+ */
+import { withBase } from '../utils/withBase';
+
+interface Props {
+  src: string;
+  alt: string;
+  title?: string;
+  width?: number;
+  height?: number;
+}
+
+const { src, alt, title, width = 900, height = 506 } = Astro.props;
+
+// Corrige o base path apenas para caminhos locais (não altera URLs externas)
+const resolvedSrc = src.startsWith('http') ? src : withBase(src);
+---
+
+<figure class="mdx-figure">
+  <img
+    src={resolvedSrc}
+    alt={alt}
+    title={title}
+    width={width}
+    height={height}
+    loading="lazy"
+    decoding="async"
+    class="mdx-img"
+  />
+  {alt && (
+    <figcaption class="mdx-caption">{alt}</figcaption>
+  )}
+</figure>
+
+<style>
+  .mdx-figure {
+    margin: 2rem 0;
+  }
+
+  .mdx-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  .mdx-caption {
+    margin-top: 0.5em;
+    font-size: 0.78em;
+    color: rgba(0, 0, 0, 0.45);
+    text-align: center;
+    font-style: italic;
+    line-height: 1.4;
+  }
+</style>

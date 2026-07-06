@@ -21,6 +21,7 @@ import Header                   from '../components/Header.astro';
 import Footer                   from '../components/Footer.astro';
 import PostCard                  from '../components/PostCard.astro';
 import TableOfContents           from '../components/TableOfContents.astro';
+import MDXImage                  from '../components/MDXImage.astro';
 import { getReadingTime }        from '../utils/readingTime';
 import { slugify }               from '../utils/slugify';
 import { withBase }              from '../utils/withBase';
@@ -236,7 +237,7 @@ const articleSchema = JSON.stringify({
 
       <!-- ── Corpo do artigo ── -->
       <article class="article-body" lang="pt-BR">
-        <Content />
+        <Content components={{ img: MDXImage }} />
       </article>
 
       <!-- ── Artigos relacionados ── -->
