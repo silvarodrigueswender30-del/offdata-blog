@@ -22,6 +22,7 @@ import Footer                   from '../components/Footer.astro';
 import PostCard                  from '../components/PostCard.astro';
 import TableOfContents           from '../components/TableOfContents.astro';
 import MDXImage                  from '../components/MDXImage.astro';
+import FAQ                       from '../components/FAQ.astro';
 import { getReadingTime }        from '../utils/readingTime';
 import { slugify }               from '../utils/slugify';
 import { withBase }              from '../utils/withBase';
@@ -61,6 +62,7 @@ const {
   coverImageAlt,
   author,
   noindex,
+  faq,
 } = post.data;
 
 const readingTime   = getReadingTime(post.body ?? '');
@@ -239,6 +241,13 @@ const articleSchema = JSON.stringify({
       <article class="article-body" lang="pt-BR">
         <Content components={{ img: MDXImage }} />
       </article>
+
+      <!-- ── FAQ automático (se definido no frontmatter) ── -->
+      {faq && faq.length > 0 && (
+        <div class="article-body">
+          <FAQ items={faq} />
+        </div>
+      )}
 
       <!-- ── Artigos relacionados ── -->
       {relatedPosts.length > 0 && (

@@ -33,8 +33,16 @@ const posts = defineCollection({
     draft:   z.boolean().default(false),
     noindex: z.boolean().default(false),
 
-    // Nota: readingTime é calculado em build time (via remark plugin ou
-    // função utilitária) e não deve ser escrito manualmente pelo autor.
+    // ── FAQ (Perguntas Frequentes) ────────────────────────────────────
+    // Opcional. Se preenchido, o layout renderiza automaticamente o bloco
+    // de FAQ visual + FAQPage JSON-LD para rich snippets no Google.
+    // Formato: array de objetos { q: string, a: string }
+    faq: z.array(
+      z.object({
+        q: z.string(),
+        a: z.string(),
+      })
+    ).optional(),
   }),
 });
 
