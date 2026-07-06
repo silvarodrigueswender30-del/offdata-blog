@@ -1,0 +1,119 @@
+---
+/**
+ * src/components/FAQ.astro
+ * Seção de perguntas frequentes para posts do blog Off-Data.
+ *
+ * Injeta automaticamente o Schema FAQPage (JSON-LD) para rich snippets
+ * no Google. O container visual usa a identidade visual da Off-Data
+ * (borda e acento azul var(--blue)).
+ *
+ * Uso no MDX:
+ *   import FAQ from '../../components/FAQ.astro'
+ *
+ *   <FAQ items={[
+ *     { q: "Pergunta?", a: "Resposta direta em 2-4 frases." },
+ *   ]} />
+ */
+
+interface FAQItem {
+  q: string;
+  a: string;
+}
+
+interface Props {
+  items: FAQItem[];
+  title?: string;
+}
+
+const { items, title = 'Perguntas frequentes' } = Astro.props;
+
+// JSON-LD FAQPage para rich snippets
+const faqSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: a,
+    },
+  })),
+});
+---
+
+<!-- JSON-LD FAQPage — lido pelo Google para rich snippets -->
+<script type="application/ld+json" set:html={faqSchema} />
+
+<section class="faq-block" aria-labelledby="faq-heading">
+  <h2 id="faq-heading" class="faq-title">{title}</h2>
+  <dl class="faq-list">
+    {items.map(({ q, a }) => (
+      <div class="faq-item">
+        <dt class="faq-question">{q}</dt>
+        <dd class="faq-answer">{a}</dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .faq-block {
+    margin: 3rem 0;
+    padding: 2rem 2rem 1.75rem;
+    background: rgba(4, 74, 179, 0.05);
+    border: 1px solid rgba(4, 74, 179, 0.18);
+    border-left: 4px solid var(--blue, #044AB3);
+    border-radius: 12px;
+  }
+
+  .faq-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--blue, #044AB3);
+    margin: 0 0 1.5rem;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+  }
+
+  .faq-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid rgba(4, 74, 179, 0.1);
+    padding-bottom: 1.25rem;
+  }
+
+  .faq-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .faq-question {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--blue, #044AB3);
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
+  }
+
+  .faq-answer {
+    font-size: 0.93rem;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.75);
+    margin: 0;
+  }
+
+  @media (max-width: 767px) {
+    .faq-block {
+      padding: 1.5rem 1.25rem 1.25rem;
+    }
+  }
+</style>
