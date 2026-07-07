@@ -23,6 +23,7 @@ import PostCard                  from '../components/PostCard.astro';
 import TableOfContents           from '../components/TableOfContents.astro';
 import MDXImage                  from '../components/MDXImage.astro';
 import FAQ                       from '../components/FAQ.astro';
+import BlogCTA                   from '../components/BlogCTA.astro';
 import { getReadingTime }        from '../utils/readingTime';
 import { slugify }               from '../utils/slugify';
 import { withBase }              from '../utils/withBase';
@@ -248,6 +249,11 @@ const articleSchema = JSON.stringify({
           <FAQ items={faq} />
         </div>
       )}
+
+      <!-- ── CTA automático ── -->
+      <div class="article-body">
+        <BlogCTA />
+      </div>
 
       <!-- ── Artigos relacionados ── -->
       {relatedPosts.length > 0 && (

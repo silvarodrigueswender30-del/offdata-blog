@@ -1,0 +1,207 @@
+---
+/**
+ * src/components/FloatingWhatsApp.astro
+ * Botão flutuante de WhatsApp — idêntico ao do site institucional Off-Data.
+ * Versão Astro pura (sem React): lógica de visibilidade por timer/scroll
+ * e balão com mensagem contextual implementados via <script> vanilla.
+ *
+ * Renderizado no BaseLayout.astro → presente em todas as páginas do blog.
+ */
+
+const WHATSAPP_NUMBER = '5534992362596';
+const WA_MSG_BLOG     = encodeURIComponent(
+  'Olá! Vim pelo blog da Off-Data e gostaria de conversar sobre minha presença digital.'
+);
+---
+
+<!-- Markup inicial oculto — script abaixo controla visibilidade -->
+<div
+  id="fw-container"
+  class="fw-container"
+  style="display:none"
+  aria-live="polite"
+>
+  <!-- Balão -->
+  <div id="fw-balloon" class="fw-balloon" role="complementary" aria-label="Mensagem da Off-Data">
+    <button
+      id="fw-close"
+      class="fw-close"
+      type="button"
+      aria-label="Fechar balão"
+    >×</button>
+    <div class="fw-title">Quer um Raio X gratuito do seu site?</div>
+    <div class="fw-subtitle">Fale com a Off-Data pelo WhatsApp.</div>
+  </div>
+
+  <!-- Botão -->
+  <a
+    id="fw-button"
+    href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WA_MSG_BLOG}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="fw-button"
+    aria-label="Fale com a Off-Data pelo WhatsApp"
+  >
+    <img
+      id="fw-img"
+      src="/blog/images/botaowhats1.svg"
+      alt="Botão WhatsApp Off-Data"
+      class="fw-img"
+      width="68"
+      height="68"
+      loading="eager"
+      decoding="async"
+    />
+  </a>
+</div>
+
+<style>
+  /* ── Container ── */
+  .fw-container {
+    position: fixed;
+    bottom: 28px;
+    right: 24px;
+    z-index: 9990;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: none;
+    animation: fwFadeIn 0.34s ease-out forwards;
+  }
+
+  .fw-container > * { pointer-events: auto; }
+
+  @keyframes fwFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+
+  /* ── Balão ── */
+  .fw-balloon {
+    width: 270px;
+    max-width: calc(100vw - 48px);
+    background: var(--blue, #044AB3);
+    color: #fff;
+    padding: 14px 38px 14px 16px;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(4, 74, 179, 0.22);
+    border: 1px solid rgba(255,255,255,0.08);
+    transform-origin: bottom right;
+    animation: fwPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) 0.12s both;
+    position: relative;
+  }
+
+  @keyframes fwPop {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0);   }
+  }
+
+  .fw-close {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 28px; height: 28px;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.55);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: color .2s, background-color .2s;
+  }
+  .fw-close:hover { color:#fff; background: rgba(255,255,255,0.12); }
+
+  .fw-title {
+    font-size: 14.5px; font-weight: 600;
+    margin-bottom: 3px; line-height: 1.25; letter-spacing: -.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .fw-subtitle { font-size: 12.5px; font-weight: 500; opacity: .92; line-height: 1.35; }
+
+  /* ── Botão ── */
+  .fw-button {
+    display: block;
+    width: 68px; height: 68px;
+    border-radius: 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    transition: transform .28s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow .28s ease;
+    animation: fwScale .32s cubic-bezier(0.175,0.885,0.32,1.275) .06s both;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @keyframes fwScale {
+    from { opacity: 0; transform: scale(.85); }
+    to   { opacity: 1; transform: scale(1);   }
+  }
+  .fw-button:hover { transform: scale(1.05); box-shadow: 0 8px 26px rgba(0,0,0,0.22); }
+
+  .fw-img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 20px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 767px) {
+    .fw-container {
+      right: max(14px, env(safe-area-inset-right));
+      bottom: max(16px, env(safe-area-inset-bottom));
+      gap: 10px;
+    }
+    .fw-balloon {
+      width: min(250px, calc(100vw - 88px));
+      padding: 12px 34px 12px 14px;
+      border-radius: 14px;
+    }
+    .fw-title   { font-size: clamp(12px, 3.35vw, 13.5px); font-weight: 700; margin-bottom: 2px; }
+    .fw-subtitle { font-size: clamp(11px, 3vw, 12px); }
+    .fw-button  { width: clamp(54px,14vw,60px); height: clamp(54px,14vw,60px); border-radius: 16px; }
+    .fw-button:hover { transform: none; }
+    .fw-img     { border-radius: 16px; }
+  }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    .fw-container, .fw-balloon, .fw-button { animation-duration: .01ms !important; }
+    .fw-button:hover { transform: none; }
+  }
+</style>
+
+<script>
+  (() => {
+    const container = document.getElementById('fw-container');
+    const balloon   = document.getElementById('fw-balloon');
+    const closeBtn  = document.getElementById('fw-close');
+    const img       = document.getElementById('fw-img');
+    if (!container) return;
+
+    // Fallback de imagem SVG → PNG
+    if (img) {
+      img.addEventListener('error', () => {
+        img.src = '/blog/images/botaowhats.png';
+      }, { once: true });
+    }
+
+    // Fechar balão
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (balloon) balloon.style.display = 'none';
+      });
+    }
+
+    // Mostrar após 5s OU 30% de scroll
+    let shown = false;
+    const show = () => {
+      if (shown) return;
+      shown = true;
+      container.style.display = 'flex';
+    };
+
+    const timer = setTimeout(show, 5000);
+
+    const onScroll = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable > 0 && (window.scrollY / scrollable) * 100 >= 30) show();
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+</script>
