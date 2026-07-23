@@ -1,18 +1,11 @@
 ---
 /**
  * src/components/FAQ.astro
- * Seção de perguntas frequentes para posts do blog Off-Data.
+ * Seção de perguntas frequentes — accordion via <details>/<summary> nativo.
  *
- * Injeta automaticamente o Schema FAQPage (JSON-LD) para rich snippets
- * no Google. O container visual usa a identidade visual da Off-Data
- * (borda e acento azul var(--blue)).
- *
- * Uso no MDX:
- *   import FAQ from '../../components/FAQ.astro'
- *
- *   <FAQ items={[
- *     { q: "Pergunta?", a: "Resposta direta em 2-4 frases." },
- *   ]} />
+ * - JSON-LD FAQPage mantido intacto para rich snippets do Google.
+ * - Interatividade sem JS: <details>/<summary> nativo com animação CSS.
+ * - Usado automaticamente pelo [slug].astro E manualmente nos MDX de segmento.
  */
 
 interface FAQItem {
@@ -27,7 +20,7 @@ interface Props {
 
 const { items, title = 'Perguntas frequentes' } = Astro.props;
 
-// JSON-LD FAQPage para rich snippets
+// JSON-LD FAQPage — não alterar a estrutura (rich snippets do Google)
 const faqSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -47,73 +40,126 @@ const faqSchema = JSON.stringify({
 
 <section class="faq-block" aria-labelledby="faq-heading">
   <h2 id="faq-heading" class="faq-title">{title}</h2>
-  <dl class="faq-list">
+  <div class="faq-list">
     {items.map(({ q, a }) => (
-      <div class="faq-item">
-        <dt class="faq-question">{q}</dt>
-        <dd class="faq-answer">{a}</dd>
-      </div>
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span class="faq-q-text">{q}</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </summary>
+        <div class="faq-answer-wrap">
+          <p class="faq-answer">{a}</p>
+        </div>
+      </details>
     ))}
-  </dl>
+  </div>
 </section>
 
 <style>
   .faq-block {
     margin: 3rem 0;
     padding: 2rem 2rem 1.75rem;
-    background: rgba(4, 74, 179, 0.05);
-    border: 1px solid rgba(4, 74, 179, 0.18);
+    background: rgba(4, 74, 179, 0.04);
+    border: 1px solid rgba(4, 74, 179, 0.15);
     border-left: 4px solid var(--blue, #044AB3);
     border-radius: 12px;
   }
 
   .faq-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--blue, #044AB3);
     margin: 0 0 1.5rem;
-    text-transform: uppercase;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
   }
 
   .faq-list {
-    margin: 0;
-    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0;
   }
 
+  /* ── Accordion item ── */
   .faq-item {
     border-bottom: 1px solid rgba(4, 74, 179, 0.1);
-    padding-bottom: 1.25rem;
   }
 
   .faq-item:last-child {
     border-bottom: none;
-    padding-bottom: 0;
   }
 
   .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    cursor: pointer;
+    list-style: none; /* Remove ▶ nativo do Safari */
     font-size: 0.97rem;
     font-weight: 600;
     color: var(--blue, #044AB3);
-    margin: 0 0 0.5rem;
     line-height: 1.4;
+    user-select: none;
+    transition: opacity 0.18s ease;
+  }
+
+  /* Remove ▶ em todos os browsers */
+  .faq-question::-webkit-details-marker { display: none; }
+  .faq-question::marker { display: none; }
+
+  .faq-question:hover {
+    opacity: 0.82;
+  }
+
+  .faq-q-text {
+    flex: 1;
+  }
+
+  .faq-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: var(--blue, #044AB3);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Rotate arrow when open */
+  .faq-item[open] .faq-icon {
+    transform: rotate(180deg);
+  }
+
+  /* ── Conteúdo da resposta ── */
+  .faq-answer-wrap {
+    overflow: hidden;
+    animation: faqOpen 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes faqOpen {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .faq-answer {
     font-size: 0.93rem;
-    line-height: 1.65;
-    color: rgba(0, 0, 0, 0.75);
+    line-height: 1.7;
+    color: rgba(0, 0, 0, 0.72);
     margin: 0;
+    padding-bottom: 1.1rem;
   }
 
   @media (max-width: 767px) {
     .faq-block {
       padding: 1.5rem 1.25rem 1.25rem;
+    }
+
+    .faq-question {
+      font-size: 0.9rem;
     }
   }
 </style>

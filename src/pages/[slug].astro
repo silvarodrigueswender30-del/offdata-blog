@@ -64,6 +64,7 @@ const {
   author,
   noindex,
   faq,
+  isSegment,
 } = post.data;
 
 const readingTime   = getReadingTime(post.body ?? '');
@@ -204,35 +205,37 @@ const articleSchema = JSON.stringify({
           </div>
         </div>
 
-        <figure class="post-cover-figure">
-          <div class="post-cover-wrap">
-            <img
-              src={withBase(coverImage)}
-              alt={coverImageAlt}
-              class="post-cover-img"
-              loading="eager"
-              fetchpriority="high"
-              decoding="sync"
-              width="1200"
-              height="675"
-            />
-          </div>
-          {post.data.coverImageCredit && (
-            <p class="cover-credit">
-              {post.data.coverImageSourceUrl
-                ? (
-                    <a
-                      href={post.data.coverImageSourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {post.data.coverImageCredit}
-                    </a>
-                  )
-                : post.data.coverImageCredit}
-            </p>
-          )}
-        </figure>
+        {!isSegment && (
+          <figure class="post-cover-figure">
+            <div class="post-cover-wrap">
+              <img
+                src={withBase(coverImage)}
+                alt={coverImageAlt}
+                class="post-cover-img"
+                loading="eager"
+                fetchpriority="high"
+                decoding="sync"
+                width="1200"
+                height="675"
+              />
+            </div>
+            {post.data.coverImageCredit && (
+              <p class="cover-credit">
+                {post.data.coverImageSourceUrl
+                  ? (
+                      <a
+                        href={post.data.coverImageSourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {post.data.coverImageCredit}
+                      </a>
+                    )
+                  : post.data.coverImageCredit}
+              </p>
+            )}
+          </figure>
+        )}
       </header>
 
       <!-- ── Índice do artigo (Table of Contents) ── -->

@@ -1,0 +1,176 @@
+---
+/**
+ * src/components/SegmentProcess.astro
+ * Seção "Como funciona a criação do seu site" — 4 passos numerados.
+ * Design fiel ao ServicoLanding.jsx (fundo branco, núm. azul quadrado, links internos azuis).
+ */
+---
+
+<section class="seg-process" aria-labelledby="process-heading">
+  <div class="seg-process__inner">
+    <div class="seg-process__header">
+      <h2 id="process-heading" class="seg-process__title">
+        Como funciona a criação<br />do seu site
+      </h2>
+      <p class="seg-process__sub">
+        Um processo simples, transparente e com prazo definido — do primeiro contato ao site no ar.
+      </p>
+    </div>
+
+    <div class="seg-process__grid">
+      <div class="seg-process__step">
+        <div class="seg-step__num" aria-hidden="true">1</div>
+        <h3 class="seg-step__title">Diagnóstico</h3>
+        <p class="seg-step__text">
+          Entendemos seu negócio, seus concorrentes e o objetivo do site (vender, captar contato ou gerar autoridade).
+        </p>
+      </div>
+
+      <div class="seg-process__step">
+        <div class="seg-step__num" aria-hidden="true">2</div>
+        <h3 class="seg-step__title">Planejamento e Design</h3>
+        <p class="seg-step__text">
+          Criamos a estrutura e o layout do site, já pensando em
+          <a href="/blog/categoria/seo-local/" class="seg-step__link">SEO e conversão</a>
+          desde o início.
+        </p>
+      </div>
+
+      <div class="seg-process__step">
+        <div class="seg-step__num" aria-hidden="true">3</div>
+        <h3 class="seg-step__title">Desenvolvimento</h3>
+        <p class="seg-step__text">
+          Construímos o site com foco extremo em
+          <a href="https://www.offdata.digital/performance-web" class="seg-step__link">performance web</a>,
+          responsividade e otimização técnica para Google.
+        </p>
+      </div>
+
+      <div class="seg-process__step">
+        <div class="seg-step__num" aria-hidden="true">4</div>
+        <h3 class="seg-step__title">Lançamento e Suporte</h3>
+        <p class="seg-step__text">
+          Site no ar em até 15 dias, com acompanhamento e ajustes nas primeiras semanas.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .seg-process {
+    background: #ffffff;
+    color: #151515;
+    padding: 4.5rem 0 3.5rem;
+    /* Full-bleed fora do container do artigo */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: 3.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .seg-process__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1.75rem;
+  }
+
+  .seg-process__header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+
+  .seg-process__title {
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: #151515;
+    margin: 0 0 1rem;
+  }
+
+  .seg-process__sub {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(21, 21, 21, 0.62);
+    max-width: 42ch;
+    margin: 0 auto;
+  }
+
+  .seg-process__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
+  }
+
+  .seg-process__step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  /* Quadrado azul com número */
+  .seg-step__num {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--blue, #044AB3);
+    color: #ffffff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .seg-step__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #151515;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .seg-step__text {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: rgba(21, 21, 21, 0.7);
+    margin: 0;
+  }
+
+  .seg-step__link {
+    color: var(--blue, #044AB3);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity 0.2s ease;
+  }
+
+  .seg-step__link:hover {
+    opacity: 0.75;
+  }
+
+  @media (max-width: 991px) {
+    .seg-process__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .seg-process__grid {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+
+    .seg-process {
+      padding: 3rem 0 2.5rem;
+    }
+  }
+</style>

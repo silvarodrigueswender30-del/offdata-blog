@@ -106,6 +106,7 @@ searchUrl.searchParams.set('query',       searchTerm);
 searchUrl.searchParams.set('orientation', 'landscape');
 searchUrl.searchParams.set('size',        'large');
 searchUrl.searchParams.set('per_page',    '5');
+searchUrl.searchParams.set('color',       '044ab3'); // Força paleta azul/fria do DS
 
 /** @type {Response} */
 let searchRes;

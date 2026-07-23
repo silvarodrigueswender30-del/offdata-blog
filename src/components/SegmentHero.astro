@@ -1,0 +1,99 @@
+---
+/**
+ * src/components/SegmentHero.astro
+ * Hero image full-bleed com máscara e texto sobreposto focado em SEO.
+ */
+import MDXImage from './MDXImage.astro';
+
+interface Props {
+  src: string;
+  alt: string;
+  keyword: string;
+}
+
+const { src, alt, keyword } = Astro.props;
+---
+
+<div class="segment-hero-wrapper">
+  <div class="segment-hero">
+    <div class="hero-image">
+      <MDXImage src={src} alt={alt} width={1920} height={600} />
+    </div>
+    <div class="hero-mask"></div>
+    <div class="hero-text-container">
+      <span class="hero-keyword">{keyword}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Full bleed trick for elements inside a constrained container */
+  .segment-hero-wrapper {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .segment-hero {
+    position: relative;
+    width: 100%;
+    height: clamp(350px, 45vw, 550px);
+    overflow: hidden;
+  }
+
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Override MDXImage styles to fit the hero */
+  .hero-image :global(figure.mdx-figure) {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  .hero-image :global(img.mdx-img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .hero-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 74, 179, 0.45); /* Overlay azul #044AB3 */
+    z-index: 2;
+  }
+
+  .hero-text-container {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2rem;
+  }
+
+  .hero-keyword {
+    color: #ffffff;
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    max-width: 900px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.02em;
+  }
+</style>

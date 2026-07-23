@@ -1,0 +1,84 @@
+---
+/**
+ * src/components/SegmentCTAs.astro — v2
+ * Botão único "Falar no WhatsApp" — estilo Off-Data real:
+ *   fundo azul, texto branco, border-radius suave (não pill),
+ *   seta em badge branco ao lado direito. Centralizado.
+ * Design fiel ao .offdata-btn .offdata-btn--blue do ServicoLanding.jsx.
+ */
+
+const WHATSAPP_NUMBER = '5534992362596';
+const WA_MSG = encodeURIComponent(
+  'Olá! Vim pelo blog da Off-Data e gostaria de conversar sobre minha presença digital.'
+);
+const WA_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WA_MSG}`;
+---
+
+<div class="seg-cta-wrap" aria-label="Chamada para ação">
+  <a
+    href={WA_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="seg-btn-wa"
+    aria-label="Fale conosco pelo WhatsApp"
+  >
+    <span class="seg-btn-wa__text">Falar no WhatsApp</span>
+    <span class="seg-btn-wa__arrow" aria-hidden="true">
+      <!-- Ícone de seta diagonal / enviar -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+  </a>
+</div>
+
+<style>
+  .seg-cta-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Botão Off-Data real: azul, badge branco à direita */
+  .seg-btn-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 3rem;
+    background: var(--blue, #044AB3);
+    color: #ffffff;
+    border-radius: 3px;           /* igual ao --radius-btn: 0.1875em do DS */
+    padding: 0.28em 0.28em 0.28em 1.1em;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: 'PP Neue Montreal', -apple-system, sans-serif;
+    text-decoration: none;
+    transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .seg-btn-wa:hover {
+    opacity: 0.88;
+  }
+
+  /* Badge branco com ícone */
+  .seg-btn-wa__arrow {
+    background: #ffffff;
+    color: var(--blue, #044AB3);
+    border-radius: 3px;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 479px) {
+    .seg-btn-wa {
+      gap: 2rem;
+      font-size: 0.92rem;
+    }
+  }
+</style>

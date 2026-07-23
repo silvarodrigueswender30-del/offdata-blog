@@ -33,6 +33,11 @@ const posts = defineCollection({
     draft:   z.boolean().default(false),
     noindex: z.boolean().default(false),
 
+    // ── Página de segmento ────────────────────────────────────────────
+    // Quando true, o [slug].astro suprime a cover image padrão do cabeçalho
+    // pois o SegmentHero dentro do MDX já cumpre esse papel.
+    isSegment: z.boolean().default(false),
+
     // ── FAQ (Perguntas Frequentes) ────────────────────────────────────
     // Opcional. Se preenchido, o layout renderiza automaticamente o bloco
     // de FAQ visual + FAQPage JSON-LD para rich snippets no Google.

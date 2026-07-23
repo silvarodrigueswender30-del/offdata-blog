@@ -1,0 +1,168 @@
+---
+/**
+ * src/components/SegmentStats.astro — v2
+ * Cards brancos com ícone em badge azul circular, número azul grande e label em mono uppercase.
+ * Design idêntico ao lp-metric do ServicoLanding.jsx do site institucional Off-Data.
+ */
+
+interface StatItem {
+  value: string;
+  label: string;
+  icon: string; // SVG path string
+}
+
+interface Props {
+  stats?: StatItem[];
+}
+
+const DEFAULT_STATS: StatItem[] = [
+  {
+    value: '40+',
+    label: 'Empresas atendidas em Uberlândia',
+    icon: 'box',
+  },
+  {
+    value: '180%',
+    label: 'Aumento médio de tráfego orgânico',
+    icon: 'users',
+  },
+  {
+    value: '2x',
+    label: 'Mais contatos pelo site',
+    icon: 'trending',
+  },
+  {
+    value: '15d',
+    label: 'Prazo médio de entrega',
+    icon: 'check',
+  },
+];
+
+const { stats = DEFAULT_STATS } = Astro.props;
+---
+
+<div class="seg-metrics" aria-label="Resultados Off-Data">
+  {stats.map(({ value, label, icon }) => (
+    <div class="seg-metric">
+      <div class="seg-metric__badge" aria-hidden="true">
+        {icon === 'box' && (
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        )}
+        {icon === 'users' && (
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        )}
+        {icon === 'trending' && (
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="17 6 23 6 23 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        )}
+        {icon === 'check' && (
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        )}
+      </div>
+      <span class="seg-metric__value">{value}</span>
+      <span class="seg-metric__label">{label}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  /* ── Grid 4 colunas — fundo branco externo ── */
+  .seg-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin: 2.5rem 0 3rem;
+  }
+
+  /* ── Card individual ── */
+  .seg-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 2rem 1.25rem 1.75rem;
+    border: 1px solid rgba(4, 74, 179, 0.12);
+    border-radius: 6px;
+    background: #ffffff;
+    transition: box-shadow 320ms ease, transform 320ms ease;
+    animation: metricGlowPulse 3.2s ease-in-out infinite;
+  }
+
+  .seg-metric:nth-child(2) { animation-delay: 0.5s; }
+  .seg-metric:nth-child(3) { animation-delay: 1s; }
+  .seg-metric:nth-child(4) { animation-delay: 1.5s; }
+
+  .seg-metric:hover {
+    box-shadow: 0 8px 28px rgba(4, 74, 179, 0.14);
+    transform: translateY(-3px);
+  }
+
+  @keyframes metricGlowPulse {
+    0%, 100% {
+      box-shadow: 0 0 14px rgba(4, 74, 179, 0.10),
+                  0 0 2px rgba(4, 74, 179, 0.04);
+    }
+    50% {
+      box-shadow: 0 0 28px rgba(4, 74, 179, 0.26),
+                  0 0 8px rgba(4, 74, 179, 0.10);
+    }
+  }
+
+  /* ── Badge circular com ícone ── */
+  .seg-metric__badge {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--blue, #044AB3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  /* ── Número grande azul ── */
+  .seg-metric__value {
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--blue, #044AB3);
+  }
+
+  /* ── Label mono uppercase ── */
+  .seg-metric__label {
+    font-size: clamp(0.68rem, 0.9vw, 0.8rem);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(21, 21, 21, 0.62);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 767px) {
+    .seg-metrics {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .seg-metric { animation: none; }
+  }
+</style>

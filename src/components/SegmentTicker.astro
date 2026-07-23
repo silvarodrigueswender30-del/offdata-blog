@@ -1,0 +1,101 @@
+---
+/**
+ * src/components/SegmentTicker.astro
+ * Marquee/ticker infinito — fundo branco, texto Fragment Mono azul em UPPERCASE.
+ * Design fiel ao .offdata-marquee do ServicoLanding.jsx.
+ * Usa CSS animation pura (sem JS) — compatível com Astro static.
+ */
+---
+
+<section class="seg-ticker" aria-label="Serviços e área de atendimento Off-Data">
+  <div class="seg-ticker__track">
+    <!-- Lista duplicada para loop infinito via CSS -->
+    <ul class="seg-ticker__list" aria-hidden="false">
+      <li>Sites Institucionais</li>
+      <li>Landing Pages</li>
+      <li>Lojas Virtuais</li>
+      <li>Uberlândia</li>
+      <li>SEO Técnico Incluso</li>
+      <li>Triângulo Mineiro</li>
+      <li>Performance Web</li>
+      <li>Google Business</li>
+      <li>Sites em 15 Dias</li>
+    </ul>
+    <!-- Cópia para loop contínuo sem pausa -->
+    <ul class="seg-ticker__list" aria-hidden="true">
+      <li>Sites Institucionais</li>
+      <li>Landing Pages</li>
+      <li>Lojas Virtuais</li>
+      <li>Uberlândia</li>
+      <li>SEO Técnico Incluso</li>
+      <li>Triângulo Mineiro</li>
+      <li>Performance Web</li>
+      <li>Google Business</li>
+      <li>Sites em 15 Dias</li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* Full-bleed */
+  .seg-ticker {
+    background: #ffffff;
+    color: var(--blue, #044AB3);
+    padding: 1.4rem 0;
+    overflow: hidden;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    border-top: 1px solid rgba(4, 74, 179, 0.1);
+    border-bottom: 1px solid rgba(4, 74, 179, 0.1);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .seg-ticker__track {
+    display: flex;
+    width: max-content;
+    animation: seg-scroll 42s linear infinite;
+  }
+
+  .seg-ticker__list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .seg-ticker__list li {
+    font-family: 'Fragment Mono', 'Courier New', monospace;
+    font-size: clamp(0.82rem, 1.3vw, 1rem);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    color: var(--blue, #044AB3);
+  }
+
+  /* Separador · entre itens */
+  .seg-ticker__list li::after {
+    content: "·";
+    opacity: 0.32;
+    color: var(--blue, #044AB3);
+    margin: 0 1.4rem;
+  }
+
+  @keyframes seg-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .seg-ticker__track {
+      animation: none;
+    }
+  }
+</style>
