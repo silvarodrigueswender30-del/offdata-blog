@@ -77,11 +77,11 @@ const formattedDate = pubDate.toLocaleDateString('pt-BR', {
     </a>
 
     <!-- Título com stretched-link (::after cobre o card inteiro) -->
-    <h3 class="card-title">
+    <h2 class="card-title">
       <a href={postHref} class="card-link">
         {title}
       </a>
-    </h3>
+    </h2>
 
     <!-- Descrição truncada via CSS line-clamp -->
     <p class="card-description">{description}</p>
@@ -238,7 +238,7 @@ const formattedDate = pubDate.toLocaleDateString('pt-BR', {
     gap: .5em;
     font-size: .8em;
     font-weight: 500;
-    color: rgba(0, 0, 0, .45);
+    color: rgba(0, 0, 0, .65); /* wcag-aa: 6.97:1 sobre branco */
     margin-top: auto;        /* empurra para o rodapé do card */
     padding-top: .75em;
     border-top: 1px solid rgba(0, 0, 0, .08);
