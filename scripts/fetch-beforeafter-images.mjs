@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
  * scripts/fetch-beforeafter-images.mjs
- * Baixa 10 imagens do Pexels para o componente SegmentBeforeAfter:
- *   1 imagem de "site ruim/genérico" + 9 imagens de sites profissionais por segmento
+ * Baixa 10 imagens comprimidas do Pexels (max 1000px, compressed) para o componente SegmentBeforeAfter
  */
 
-import { createWriteStream, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { createWriteStream, mkdirSync, readFileSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import path from 'node:path';
@@ -46,9 +45,7 @@ if (!PEXELS_API_KEY) {
 }
 
 const IMAGES = [
-  // Lado "RUIM" — mesmo para todos os segmentos
   { query: 'old slow computer office frustrated work',  slug: 'before-after-bad',        orientation: 'landscape' },
-  // Lado "BOM" — um por segmento (foto de ambiente profissional do setor)
   { query: 'law office modern professional desk',       slug: 'before-after-advogados',   orientation: 'landscape' },
   { query: 'architecture studio modern design table',   slug: 'before-after-arquitetos',  orientation: 'landscape' },
   { query: 'landscaping beautiful garden design',       slug: 'before-after-paisagistas', orientation: 'landscape' },
@@ -64,15 +61,10 @@ async function fetchAndSave({ query, slug, orientation }) {
   const dest = path.join(PROJECT_ROOT, 'public', 'images', 'before-after', `${slug}.jpg`);
   mkdirSync(path.dirname(dest), { recursive: true });
 
-  if (existsSync(dest)) {
-    console.log(`SKIP (already exists): ${slug}`);
-    return { slug, path: `/images/before-after/${slug}.jpg`, skipped: true };
-  }
-
   const url = new URL('https://api.pexels.com/v1/search');
   url.searchParams.set('query', query);
   url.searchParams.set('orientation', orientation);
-  url.searchParams.set('size', 'large');
+  url.searchParams.set('size', 'medium');
   url.searchParams.set('per_page', '3');
 
   const searchRes = await fetch(url.toString(), { headers: { Authorization: PEXELS_API_KEY } });
@@ -88,7 +80,12 @@ async function fetchAndSave({ query, slug, orientation }) {
   }
 
   const photo = data.photos[0];
-  const imageUrl = photo.src.large2x || photo.src.large;
+  const rawUrl = photo.src.large || photo.src.medium || photo.src.original;
+  const urlObj = new URL(rawUrl);
+  urlObj.searchParams.set('w', '1000');
+  urlObj.searchParams.set('auto', 'compress');
+  urlObj.searchParams.set('cs', 'tinysrgb');
+  const imageUrl = urlObj.toString();
 
   const imgRes = await fetch(imageUrl);
   if (!imgRes.ok) {
@@ -101,14 +98,13 @@ async function fetchAndSave({ query, slug, orientation }) {
   return { slug, path: `/images/before-after/${slug}.jpg`, photographer: photo.photographer, pexelsUrl: photo.url };
 }
 
-console.log(`\nBaixando ${IMAGES.length} imagens do Pexels...\n`);
+console.log(`\nBaixando ${IMAGES.length} imagens comprimidas do Pexels...\n`);
 
 const results = [];
 for (const img of IMAGES) {
   const result = await fetchAndSave(img);
   if (result) results.push(result);
-  // Pausa de 300ms para respeitar rate limits
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 200));
 }
 
 console.log('\n=== RESULTADO ===');

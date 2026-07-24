@@ -156,7 +156,12 @@ if (!searchData.photos || searchData.photos.length === 0) {
 }
 
 const photo      = searchData.photos[0];
-const imageUrl   = photo.src.large2x || photo.src.large;   // prefere large2x
+const rawUrl     = photo.src.large || photo.src.large2x || photo.src.original;
+const urlObj     = new URL(rawUrl);
+urlObj.searchParams.set('w', '1200');
+urlObj.searchParams.set('auto', 'compress');
+urlObj.searchParams.set('cs', 'tinysrgb');
+const imageUrl   = urlObj.toString();
 const photoCredit = photo.photographer;
 const pexelsUrl   = photo.url;
 

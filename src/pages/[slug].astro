@@ -157,6 +157,16 @@ const articleSchema = JSON.stringify({
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image"       content={absoluteCoverImage} />
 
+    <!-- ── LCP Image Preload (Segmentos) ── -->
+    {isSegment && (
+      <link
+        rel="preload"
+        as="image"
+        href={withBase(coverImage)}
+        fetchpriority="high"
+      />
+    )}
+
     <!-- ── JSON-LD Article ── -->
     <script type="application/ld+json" set:html={articleSchema} />
   </Fragment>
@@ -321,7 +331,7 @@ const articleSchema = JSON.stringify({
   }
 
   .breadcrumb-link {
-    color: rgba(0, 0, 0, .45);
+    color: rgba(0, 0, 0, .62);
     text-decoration: none;
     transition: color 200ms ease;
   }
@@ -331,7 +341,7 @@ const articleSchema = JSON.stringify({
   }
 
   .breadcrumb-sep {
-    color: rgba(0, 0, 0, .2);
+    color: rgba(0, 0, 0, .52);
     user-select: none;
   }
 
@@ -397,7 +407,7 @@ const articleSchema = JSON.stringify({
     gap: .5em;
     font-size: .82rem;
     font-weight: 500;
-    color: rgba(0, 0, 0, .45);
+    color: rgba(0, 0, 0, .65);
   }
 
   .meta-sep {

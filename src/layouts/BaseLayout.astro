@@ -2,8 +2,6 @@
 // src/layouts/BaseLayout.astro
 // Layout base mínimo do blog Off-Data.
 // Responsabilidade: estrutura HTML invariante + globals.css.
-// Cada página injeta seu próprio <head> via <slot name="head" />.
-// Header e Footer serão adicionados nos próximos prompts.
 import '../styles/globals.css';
 import { withBase } from '../utils/withBase';
 import FloatingWhatsApp from '../components/FloatingWhatsApp.astro';
@@ -15,6 +13,22 @@ import FloatingWhatsApp from '../components/FloatingWhatsApp.astro';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href={withBase("/isologoazul.svg")} />
+
+    <!-- ── Preload de Fontes (Elimina FOUT e melhora CLS) ── -->
+    <link
+      rel="preload"
+      href={withBase('/fonts/PPNeueMontreal-Medium.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href={withBase('/fonts/PPNeueMontreal-Regular.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
     
     <!-- Clarity tracking code for https://offdata.digital/ -->
     <script type="text/javascript">

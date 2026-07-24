@@ -2,6 +2,7 @@
 /**
  * src/components/SegmentHero.astro
  * Hero image full-bleed com máscara e texto sobreposto focado em SEO.
+ * Otimizado para LCP e CLS 0 (loading eager + fetchpriority high + reserva de espaço via aspect-ratio).
  */
 import MDXImage from './MDXImage.astro';
 
@@ -17,7 +18,15 @@ const { src, alt, keyword } = Astro.props;
 <div class="segment-hero-wrapper">
   <div class="segment-hero">
     <div class="hero-image">
-      <MDXImage src={src} alt={alt} width={1920} height={600} />
+      <MDXImage
+        src={src}
+        alt={alt}
+        width={1400}
+        height={550}
+        loading="eager"
+        fetchpriority="high"
+        decoding="sync"
+      />
     </div>
     <div class="hero-mask"></div>
     <div class="hero-text-container">
@@ -27,7 +36,7 @@ const { src, alt, keyword } = Astro.props;
 </div>
 
 <style>
-  /* Full bleed trick for elements inside a constrained container */
+  /* Full bleed com containment para evitar CLS */
   .segment-hero-wrapper {
     width: 100vw;
     position: relative;
@@ -37,13 +46,18 @@ const { src, alt, keyword } = Astro.props;
     margin-right: -50vw;
     margin-top: 3rem;
     margin-bottom: 4rem;
+    box-sizing: border-box;
   }
 
   .segment-hero {
     position: relative;
     width: 100%;
+    aspect-ratio: 16 / 5;
+    min-height: 350px;
+    max-height: 550px;
     height: clamp(350px, 45vw, 550px);
     overflow: hidden;
+    background-color: #0a1a3a; /* Reserva visual de espaço antes do download */
   }
 
   .hero-image {
