@@ -38,12 +38,9 @@ const { src, alt, keyword } = Astro.props;
 <style>
   /* Full bleed com containment para evitar CLS */
   .segment-hero-wrapper {
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
+    width: calc(100% + 3.5rem);
+    margin-left: -1.75rem;
+    margin-right: -1.75rem;
     margin-top: 3rem;
     margin-bottom: 4rem;
     box-sizing: border-box;
